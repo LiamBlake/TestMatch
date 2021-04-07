@@ -21,7 +21,7 @@ class TimeOfDay {
     uint _hrs;
 
     static std::string two_digits(int val);
-    void rounder();
+    void round();
 
   public:
     TimeOfDay();
@@ -31,6 +31,7 @@ class TimeOfDay {
     // Explicit casts
     operator std::string();
     operator int();
+    operator double();
 
     // Getters
     uint sec();
@@ -47,7 +48,6 @@ class TimeOfDay {
     TimeOfDay& operator+=(const TimeOfDay& rhs);
     TimeOfDay& operator+=(const int& rhs);
 
-    friend bool operator==(const TimeOfDay& lhs, const TimeOfDay& rhs);
     friend bool operator==(const TimeOfDay& lhs, const TimeOfDay& rhs);
 
     friend TimeOfDay operator+(TimeOfDay lhs, const TimeOfDay& rhs);
