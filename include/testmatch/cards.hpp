@@ -204,14 +204,16 @@ class PlayerCard {
 
   protected:
     Player* player;
+    int order;
 
   public:
     // Constructors
     PlayerCard(){};
-    PlayerCard(Player* c_player);
+    PlayerCard(Player* c_player, int c_order);
 
-    // Getter
+    // Getters
     Player* get_player_ptr();
+    int get_order();
 
     // Pure virtual methods
     virtual void update_score(std::string outcome) = 0;
@@ -223,6 +225,7 @@ class PlayerCard {
     template <class Archive>
     void serialize(Archive& ar, const unsigned int version) {
         ar& player;
+        ar& order;
     };
 };
 
@@ -244,7 +247,7 @@ class BatterCard : public PlayerCard {
 
   public:
     BatterCard() : PlayerCard(){};
-    BatterCard(Player* c_player);
+    BatterCard(Player* c_player, int c_order);
 
     BatStats get_sim_stats(void);
 
@@ -303,7 +306,7 @@ class BowlerCard : public PlayerCard {
 
   public:
     BowlerCard() : PlayerCard(){};
-    BowlerCard(Player* c_player);
+    BowlerCard(Player* c_player, int c_order);
 
     BowlStats get_sim_stats(void);
     void update_score(std::string outcome);

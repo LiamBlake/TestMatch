@@ -121,14 +121,17 @@ Fatigue::~Fatigue() { delete dist; }
 /*
     PlayerCard implementations
 */
-PlayerCard::PlayerCard(Player* c_player) { player = c_player; }
+PlayerCard::PlayerCard(Player* c_player, int c_order)
+    : player(c_player), order(c_order) {}
 
 Player* PlayerCard::get_player_ptr() { return player; }
 
+int PlayerCard::get_order() { return order; }
 /*
     BatterCard implementations
 */
-BatterCard::BatterCard(Player* c_player) : PlayerCard(c_player) {
+BatterCard::BatterCard(Player* c_player, int c_order)
+    : PlayerCard(c_player, c_order) {
     // Assume that batter has arrived at crease when object is created
 
     // Career averages
@@ -281,8 +284,8 @@ BatterCard::~BatterCard() {
 /*
     BatterCard implementations
 */
-BowlerCard::BowlerCard(Player* c_player)
-    : PlayerCard(c_player), tiredness(c_player->get_bowl_type()) {
+BowlerCard::BowlerCard(Player* c_player, int c_order)
+    : PlayerCard(c_player, c_order), tiredness(c_player->get_bowl_type()) {
     stats.bowl_avg = c_player->get_bowl_avg();
     stats.strike_rate = c_player->get_bowl_sr();
     stats.bowl_type = c_player->get_bowl_type();
@@ -354,9 +357,10 @@ void BowlerCard::over_rest() {
 std::string BowlerCard::print_card(void) {
     std::string output = player->get_full_initials() + " ";
 
-    output += std::to_string(stats.overs) + "." +
-              std::to_string(stats.over_balls) + "-";
-    output += std::to_string(stats.maidens) + "-";
+    output += std::to_string(stats.overs);
+    if (stats.over_balls > 0)
+        output += "." + std::to_string(stats.over_balls);
+    output += "-" + std::to_string(stats.maidens) + "-";
     output += std::to_string(stats.runs) + "-";
     output += std::to_string(stats.wickets);
 
@@ -366,11 +370,7 @@ std::string BowlerCard::print_card(void) {
 std::string BowlerCard::print_spell(void) {
     std::string output = player->get_full_initials() + " ";
 
-    output += std::to_string(stats.spell_overs) + "." +
-              std::to_string(stats.over_balls) + "-";
-    output += std::to_string(stats.spell_maidens) + "-";
-    output += std::to_string(stats.spell_runs) + "-";
-    output += std::to_string(stats.spell_wickets);
+    // TODO: Implement
 
     return output;
 }
@@ -473,7 +473,7 @@ PlayerCard** sort_array(PlayerCard** list, int len,
 BatterCard** create_batting_cards(Team* team) {
     BatterCard** cards = new BatterCard*[11];
     for (int i = 0; i < 11; i++) {
-        cards[i] = new BatterCard(team->players[i]);
+        cards[i] = new BatterCard(team->players[i], i);
     }
 
     return cards;
@@ -481,7 +481,7 @@ BatterCard** create_batting_cards(Team* team) {
 BowlerCard** create_bowling_cards(Team* team) {
     BowlerCard** cards = new BowlerCard*[11];
     for (int i = 0; i < 11; i++) {
-        cards[i] = new BowlerCard(team->players[i]);
+        cards[i] = new BowlerCard(team->players[i], i);
     }
 
     return cards;
@@ -670,12 +670,12 @@ std::string MatchResult::print() {
         case draw:
             return "Match Drawn";
         case win_chasing:
-            return winner->name + "won by " + std::to_string(margin) +
+            return winner->name + " won by " + std::to_string(margin) +
                    " wickets";
         case win_bowling:
-            return winner->name + "won by " + std::to_string(margin) + " runs";
+            return winner->name + " won by " + std::to_string(margin) + " runs";
         case win_innings:
-            return winner->name + "won by an innings and " +
+            return winner->name + " won by an innings and " +
                    std::to_string(margin) + " runs";
         case tie:
             return "Match tied";

@@ -665,9 +665,10 @@ std::string Innings::print() {
             std::string econs = stream.str();
 
             output += ptr->get_player_ptr()->get_full_initials() + BUFFER +
-                      std::to_string(overs.first) + "." +
-                      std::to_string(overs.second) + BUFFER +
-                      std::to_string(stats.maidens) + BUFFER +
+                      std::to_string(overs.first);
+            if (overs.second > 0)
+                output += "." + std::to_string(overs.second);
+            output += BUFFER + std::to_string(stats.maidens) + BUFFER +
                       std::to_string(stats.runs) + BUFFER +
                       std::to_string(stats.wickets) + BUFFER + econs + "\n";
         }
