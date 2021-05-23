@@ -15,10 +15,10 @@
 #include "team.hpp"
 
 #include <functional>
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-//#include "MatchTime.h"
 
 // Forward declaration allows for referencing Innings object in managers
 class Innings;
@@ -290,7 +290,7 @@ class Innings {
     // Returns state string explainining why innings has ended
     std::string simulate(bool quiet = true);
 
-    std::string print(void);
+    friend std::ostream& operator<<(std::ostream& os, const Innings& inns);
 
     // Getters
     BatterCard** get_batters();
@@ -416,10 +416,10 @@ class Match {
     void start(bool quiet = true);
 
     /**
-     * @brief
-     * @return
+     * @brief 
+     * 
      */
-    std::string print_all();
+    void print_all();
 
     ~Match();
 

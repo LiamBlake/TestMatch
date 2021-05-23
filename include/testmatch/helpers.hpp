@@ -6,12 +6,6 @@
  * vice-versa. These are used primarily in conversions from simulation backend
  * to printed/displayed results (e.g. a scorecard or ball-by-ball description).
  *
- * Note that all the functions here are defined and implementated here (with the
- * inline keyword). This is probably bad practice, but I wanted to avoid having
- * an additional .cpp file since no class is declared here. If I need to declare
- * a class here for whatever reason, I will probably move the implementations
- * here to a .cpp, but for now, the header is all we need.
- *
  */
 
 #ifndef UTILITY_H
@@ -21,6 +15,8 @@
 
 #include <cmath>
 #include <exception>
+#include <iomanip>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -207,5 +203,13 @@ inline double boxcox(double x, double lambda) {
         return (pow(x, lambda) - 1) / lambda;
     }
 }
+
+template <typename T>
+void print_spaced(std::ostream& os, T t, const int& width) {
+    os << std::left << std::setw(width) << std::setfill(' ') << t;
+    // return os;
+}
+
+std::string print_rounded(double value, int precision = 2);
 
 #endif // UTILITY_H

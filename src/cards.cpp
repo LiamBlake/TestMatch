@@ -579,7 +579,7 @@ bool Extras::update_score(std::string outcome) {
 }
 
 // Print methods
-std::string Extras::print() {
+std::string Extras::print() const {
     std::vector<std::string> strings;
 
     if (byes > 0) {
@@ -601,7 +601,7 @@ std::string Extras::print() {
     return join_str(strings, ", ");
 }
 
-int Extras::total() { return byes + legbyes + noballs + wides; }
+int Extras::total() const { return byes + legbyes + noballs + wides; }
 
 std::string FOW::print() {
     std::string output = std::to_string(runs) + "-" + std::to_string(wkts) +

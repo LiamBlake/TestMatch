@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(testclass_dismissal) {
 
 BOOST_AUTO_TEST_CASE(testclass_battercard) {
     // Test object
-    BatterCard bc(&tp_bat);
+    BatterCard bc(&tp_bat, 0);
 
     // Ensure correct initialisation
     BOOST_TEST(bc.print_card() == "M Labuschagne not out 0 (0b 0x4 0x6) SR: -");
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(testclass_battercard) {
 
 BOOST_AUTO_TEST_CASE(testclass_bowlercard) {
     // Test object
-    BowlerCard bc(&tp_bowl);
+    BowlerCard bc(&tp_bowl, 0);
 
     // Check initialisation
     BOOST_TEST(bc.print_card() == "TA Boult 0.0-0-0-0");

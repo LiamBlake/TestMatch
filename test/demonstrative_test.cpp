@@ -100,8 +100,8 @@ int main() {
     m.pregame();
     m.start(false);
 
-    std::cout.precision(3);
-    std::cout << m.print_all() << std::endl;
+    // std::cout.precision(3);
+    m.print_all();
 
     return 0;
 }

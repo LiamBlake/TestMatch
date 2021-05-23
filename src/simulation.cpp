@@ -596,62 +596,96 @@ std::string Innings::simulate(bool quiet) {
     return state;
 }
 
-std::string Innings::print() {
-    std::string output = "";
+std::ostream& operator<<(std::ostream& os, const Innings& inns) {
+    const int name_width = 20;
+    const int dism_width = 30;
 
     // Header
-    output += DIVIDER + BUFFER + team_bat->name + " " + ordinal(inns_no) +
-              " Innings\n";
-    output += DIVIDER + BUFFER + "Batter " + BUFFER + BUFFER + BUFFER + BUFFER +
-              BUFFER + BUFFER + BUFFER + BUFFER + BUFFER + BUFFER + BUFFER +
-              BUFFER + "R" + BUFFER + "B" + BUFFER + "4s" + BUFFER + "6s" +
-              BUFFER + "SR";
-    output += DIVIDER;
+    os << Innings::DIVIDER << inns.team_bat->name << " "
+       << ordinal(inns.inns_no) << " Innings" << Innings::DIVIDER;
+
+    // Titles
+    print_spaced<std::string>(os, "Batter", name_width);
+    print_spaced<std::string>(os, "", dism_width);
+    print_spaced<std::string>(os, "R", 4);
+    print_spaced<std::string>(os, "4s", 4);
+    print_spaced<std::string>(os, "6s", 4);
+    print_spaced<std::string>(os, "SR", 4);
+
+    os << Innings::DIVIDER;
 
     // Print each batter
     for (int i = 0; i < 11; i++) {
-        BatterCard* ptr = batters[i];
+        BatterCard* ptr = inns.batters[i];
         BatStats stats = ptr->get_sim_stats();
 
         // Calculate strike rate
-        double sr = (float)stats.runs / stats.balls * 100;
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(2) << sr;
-        std::string srs = stream.str();
+        std::string sr =
+            print_rounded((float)stats.runs / stats.balls * 100, 2);
 
         if (ptr->is_active()) {
-            output += BUFFER + ptr->get_player_ptr()->get_full_initials() +
-                      BUFFER + ptr->print_dism() + BUFFER +
-                      std::to_string(stats.runs) + BUFFER +
-                      std::to_string(stats.balls) + BUFFER +
-                      std::to_string(stats.fours) + BUFFER +
-                      std::to_string(stats.sixes) + BUFFER + srs + "\n";
+            print_spaced<std::string>(
+                os, ptr->get_player_ptr()->get_full_initials(), name_width);
+            print_spaced<std::string>(os, ptr->print_dism(), dism_width);
+            print_spaced<int>(os, stats.runs, 4);
+            print_spaced<int>(os, stats.balls, 4);
+            print_spaced<int>(os, stats.fours, 4);
+            print_spaced<int>(os, stats.sixes, 4);
+            print_spaced<std::string>(os, sr, 4);
+
+            os << std::endl;
         }
     }
     // Extras
-    output += "\n" + BUFFER + "Extras" + BUFFER + "(" + extras.print() + ")" +
-              BUFFER + std::to_string(extras.total());
-
-    output += DIVIDER;
+    os << Innings::DIVIDER;
+    print_spaced<std::string>(os, "Extras", name_width);
+    print_spaced<std::string>(os, "(" + inns.extras.print() + ")", dism_width);
+    print_spaced<int>(os, inns.extras.total(), 4);
+    os << Innings::DIVIDER;
 
     // Total score
-    int over_balls = last_over->get_num_legal_delivs();
-    double rr = team_score / (overs + (float)over_balls / 6.0);
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << rr;
-    std::string s = stream.str();
-    output += BUFFER + "Total" + BUFFER + BUFFER + "(" + std::to_string(overs) +
-              " Ov, RR " + s + ")" + BUFFER + BUFFER +
-              std::to_string(team_score) + DIVIDER + "\n";
+    int over_balls = inns.last_over->get_num_legal_delivs();
+    std::string rr = print_rounded(
+        inns.team_score / (inns.overs + (float)over_balls / 6.0), 2);
 
-    // List Did not bat, fall of wickets
+    print_spaced<std::string>(os, "Total", name_width);
+    print_spaced<std::string>(
+        os, "(" + std::to_string(inns.overs) + " Ov, RR " + rr + ")",
+        dism_width);
+    os << inns.team_score;
+
+    if (inns.wkts < 10) {
+        os << "/" << inns.wkts;
+        if (false) {
+            // TODO: Use declared flag
+            os << "d";
+        }
+
+        os << Innings::DIVIDER;
+
+        // Did not bat
+        os << "Did not bat: ";
+    }
+
+    os << Innings::DIVIDER;
+
+    // fall of wickets
+    os << "Fall of Wickets: ";
+
+    os << Innings::DIVIDER;
 
     // Bowlers
-    output += BUFFER + "Bowling" + BUFFER + BUFFER + "O" + BUFFER + "M" +
-              BUFFER + "R" + BUFFER + "W" + BUFFER + "Econ" + DIVIDER;
+    print_spaced<std::string>(os, "Bowling", name_width);
+    print_spaced<std::string>(os, "O", 4);
+    print_spaced<std::string>(os, "M", 4);
+    print_spaced<std::string>(os, "R", 4);
+    print_spaced<std::string>(os, "W", 4);
+    print_spaced<std::string>(os, "Econ", 4);
+    os << Innings::DIVIDER;
+
     for (int i = 0; i < 11; i++) {
         // Calculate and format economy
-        BowlerCard* ptr = bowlers[i];
+        BowlerCard* ptr = inns.bowlers[i];
         BowlStats stats = ptr->get_sim_stats();
 
         // Only print if they have bowled a ball
@@ -659,22 +693,25 @@ std::string Innings::print() {
             std::pair<int, int> overs = balls_to_ov(stats.balls);
 
             // Calculate economy
-            double econ = stats.runs / (overs.first + overs.second / 6.0);
-            std::stringstream stream;
-            stream << std::fixed << std::setprecision(2) << econ;
-            std::string econs = stream.str();
+            std::string econ =
+                print_rounded(stats.runs / (overs.first + overs.second / 6.0));
 
-            output += ptr->get_player_ptr()->get_full_initials() + BUFFER +
-                      std::to_string(overs.first);
+            print_spaced<std::string>(
+                os, ptr->get_player_ptr()->get_full_initials(), name_width);
+
+            std::string over_str = std::to_string(overs.first);
             if (overs.second > 0)
-                output += "." + std::to_string(overs.second);
-            output += BUFFER + std::to_string(stats.maidens) + BUFFER +
-                      std::to_string(stats.runs) + BUFFER +
-                      std::to_string(stats.wickets) + BUFFER + econs + "\n";
+                over_str += "." + std::to_string(overs.second);
+
+            print_spaced<std::string>(os, over_str, 4);
+            print_spaced<int>(os, stats.maidens, 4);
+            print_spaced<int>(os, stats.runs, 4);
+            print_spaced<int>(os, stats.wickets, 4);
+            print_spaced<std::string>(os, econ, 4);
         }
     }
 
-    return output;
+    return os;
 }
 
 // Getters
@@ -859,16 +896,13 @@ void Match::start(bool quiet) {
     }
 }
 
-std::string Match::print_all() {
-    std::string output;
+void Match::print_all() {
     for (int i = 0; i < 4; i++) {
         if (inns[i] != nullptr)
-            output += inns[i]->print();
+            std::cout << inns[i] << std::endl;
     }
 
-    output += "\n" + result->print() + ".\n";
-
-    return output;
+    std::cout << result->print() << std::endl;
 }
 
 Match::~Match() {
