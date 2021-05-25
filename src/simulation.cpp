@@ -240,7 +240,8 @@ int Innings::NO_INNS = 0;
 // Printing variables
 bool Innings::AUSTRALIAN_STYLE = false;
 std::string Innings::DIVIDER =
-    "\n--------------------------------------------------------------------\n";
+    "\n-----------------------------------------------"
+    "------------------------------\n";
 std::string Innings::BUFFER = "   ";
 
 // Constructor
@@ -607,10 +608,11 @@ std::ostream& operator<<(std::ostream& os, const Innings& inns) {
     // Titles
     print_spaced<std::string>(os, "Batter", name_width);
     print_spaced<std::string>(os, "", dism_width);
-    print_spaced<std::string>(os, "R", 4);
-    print_spaced<std::string>(os, "4s", 4);
-    print_spaced<std::string>(os, "6s", 4);
-    print_spaced<std::string>(os, "SR", 4);
+    print_spaced<std::string>(os, "R", 5);
+    print_spaced<std::string>(os, "B", 5);
+    print_spaced<std::string>(os, "4s", 5);
+    print_spaced<std::string>(os, "6s", 5);
+    print_spaced<std::string>(os, "SR", 5);
 
     os << Innings::DIVIDER;
 
@@ -623,15 +625,25 @@ std::ostream& operator<<(std::ostream& os, const Innings& inns) {
         std::string sr =
             print_rounded((float)stats.runs / stats.balls * 100, 2);
 
+        // Player name - mark if captain or wicketkeeper
+        std::string name = ptr->get_player_ptr()->get_full_initials();
+        if (ptr->get_player_ptr() ==
+            inns.team_bat->players[inns.team_bat->i_captain]) {
+            name += " (c)";
+        }
+        if (ptr->get_player_ptr() ==
+            inns.team_bat->players[inns.team_bat->i_wk]) {
+            name += " (wk)";
+        }
+
         if (ptr->is_active()) {
-            print_spaced<std::string>(
-                os, ptr->get_player_ptr()->get_full_initials(), name_width);
+            print_spaced<std::string>(os, name, name_width);
             print_spaced<std::string>(os, ptr->print_dism(), dism_width);
-            print_spaced<int>(os, stats.runs, 4);
-            print_spaced<int>(os, stats.balls, 4);
-            print_spaced<int>(os, stats.fours, 4);
-            print_spaced<int>(os, stats.sixes, 4);
-            print_spaced<std::string>(os, sr, 4);
+            print_spaced<int>(os, stats.runs, 5);
+            print_spaced<int>(os, stats.balls, 5);
+            print_spaced<int>(os, stats.fours, 5);
+            print_spaced<int>(os, stats.sixes, 5);
+            print_spaced<std::string>(os, sr, 5);
 
             os << std::endl;
         }
@@ -640,7 +652,7 @@ std::ostream& operator<<(std::ostream& os, const Innings& inns) {
     os << Innings::DIVIDER;
     print_spaced<std::string>(os, "Extras", name_width);
     print_spaced<std::string>(os, "(" + inns.extras.print() + ")", dism_width);
-    print_spaced<int>(os, inns.extras.total(), 4);
+    print_spaced<int>(os, inns.extras.total(), 5);
     os << Innings::DIVIDER;
 
     // Total score
@@ -676,11 +688,11 @@ std::ostream& operator<<(std::ostream& os, const Innings& inns) {
 
     // Bowlers
     print_spaced<std::string>(os, "Bowling", name_width);
-    print_spaced<std::string>(os, "O", 4);
-    print_spaced<std::string>(os, "M", 4);
-    print_spaced<std::string>(os, "R", 4);
-    print_spaced<std::string>(os, "W", 4);
-    print_spaced<std::string>(os, "Econ", 4);
+    print_spaced<std::string>(os, "O", 6);
+    print_spaced<std::string>(os, "M", 5);
+    print_spaced<std::string>(os, "R", 5);
+    print_spaced<std::string>(os, "W", 5);
+    print_spaced<std::string>(os, "Econ", 5);
     os << Innings::DIVIDER;
 
     for (int i = 0; i < 11; i++) {
@@ -703,11 +715,12 @@ std::ostream& operator<<(std::ostream& os, const Innings& inns) {
             if (overs.second > 0)
                 over_str += "." + std::to_string(overs.second);
 
-            print_spaced<std::string>(os, over_str, 4);
-            print_spaced<int>(os, stats.maidens, 4);
-            print_spaced<int>(os, stats.runs, 4);
-            print_spaced<int>(os, stats.wickets, 4);
-            print_spaced<std::string>(os, econ, 4);
+            print_spaced<std::string>(os, over_str, 6);
+            print_spaced<int>(os, stats.maidens, 5);
+            print_spaced<int>(os, stats.runs, 5);
+            print_spaced<int>(os, stats.wickets, 5);
+            print_spaced<std::string>(os, econ, 5);
+            os << std::endl;
         }
     }
 
@@ -899,7 +912,7 @@ void Match::start(bool quiet) {
 void Match::print_all() {
     for (int i = 0; i < 4; i++) {
         if (inns[i] != nullptr)
-            std::cout << inns[i] << std::endl;
+            std::cout << *inns[i] << std::endl;
     }
 
     std::cout << result->print() << std::endl;

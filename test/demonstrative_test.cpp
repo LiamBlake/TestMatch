@@ -24,40 +24,37 @@ int main() {
     // Reseed RNG
     srand(time(NULL));
 
-    // Australia players
-    Player a1(
-        "David", "Warner", "DA",
-        {155, 48.94, 72.85, 342, 67.25, 85.5, 4.71, left, left, legbreak});
+    // World XI players
+    Player a1("Alastair", "Cook", "AN",
+              {291, 45.35, 46.95, 18, 7, 18.0, 2.33, right, right, med});
     Player a2("Will", "Pucovski", "WJ",
               {1, 42.54, 60.21, 0, 1000, 1000, 4.00, right, right, med});
     Player a3(
         "Marnus", "Labuschagne", "M",
         {23, 63.43, 56.52, 756, 38.66, 63.0, 3.68, right, right, legbreak});
-    Player a4(
-        "Steve", "Smith", "SPD",
-        {131, 62.84, 55.3, 1381, 56.47, 81.2, 4.17, right, right, legbreak});
+    Player a4("Virat", "Kohli", "V",
+              {153, 52.37, 52.37, 175, 1000, 1000, 2.88, right, right, med});
     Player a5(
-        "Travis", "Head", "TM",
-        {28, 41.96, 50.41, 126, 68.32, 63.7, 3.61, left, right, offbreak});
-    Player a6(
-        "Cameron", "Green", "C",
-        {7, 40.71, 40.68, 264, 30.30, 50.7, 2.98, right, right, fast_med});
-    Player a7("Tim", "Paine", "TD",
-              {50, 31.66, 44.24, 0, 1000, 1000, 4.00, right, right, med});
+        "Glenn", "Maxwell", "GJ",
+        {14, 46.07, 59.47, 462, 42.62, 57.70, 4.42, right, right, offbreak});
+    Player a6("Mohammad", "Rizwan", "M",
+              {22, 43.15, 51.57, 0, 1000, 1000, 4.00, right, right, med});
+    Player a7(
+        "Colin", "de Grandhomme", "C",
+        {36, 37.03, 81.72, 3683, 31.63, 78.30, 2.42, right, right, med_fast});
     Player a8(
         "Pat", "Cummins", "PJ",
         {44, 17.02, 38.51, 6761, 21.82, 47.2, 2.76, right, right, fast_med});
-    Player a9(
-        "Jhye", "Richardson", "JA",
-        {1, 12.95, 58.81, 306, 23.74, 52.3, 2.41, right, right, fast_med});
+    Player a9("Anrich", "Nortje", "AA",
+              {18, 7.42, 24.07, 1894, 29.84, 48.50, 3.68, right, right, fast});
     Player a10(
-        "Josh", "Hazlewood", "JR",
-        {68, 12.02, 45.22, 11887, 25.65, 56.0, 2.74, left, right, fast_med});
+        "Lasith", "Embuldeniya", "L",
+        {16, 8.06, 38.53, 3231, 37.20, 65.90, 3.38, left, left, legbreak});
     Player a11(
-        "Nathan", "Lyon", "NM",
-        {123, 12.27, 46.99, 24568, 31.58, 62.9, 3, right, right, offbreak});
-    Team aus = {"Australia", &a1, &a2,  &a3,  &a4, &a5, &a6, &a7,
-                &a8,         &a9, &a10, &a11, 6,   6,   9,   8};
+        "Shaheen Shah", "Afridi", "S",
+        {24, 4.68, 31.67, 3300, 29.58, 56.80, 3.12, left, left, fast_med});
+    Team world = {"World XI", &a1, &a2,  &a3,  &a4, &a5, &a6, &a7,
+                  &a8,        &a9, &a10, &a11, 3,   5,   7,   10};
 
     Player b1("Tom", "Latham", "TWM",
               {92, 42.34, 46.66, 0, 1000, 1000, 4.00, left, left, med});
@@ -85,13 +82,13 @@ int main() {
     Player b11(
         "Trent", "Boult", "TA",
         {82, 15.2, 56.86, 14874, 27.65, 55.7, 2.97, right, left, fast_med});
-    Team nz = {"New Zealand", &b1, &b2,  &b3,  &b4, &b5, &b6, &b7,
-               &b8,           &b9, &b10, &b11, 2,   5,   10,  8};
+    Team alltime = {"New Zealand", &b1, &b2,  &b3,  &b4, &b5, &b6, &b7,
+                    &b8,           &b9, &b10, &b11, 2,   5,   10,  8};
 
     // Venue
     PitchFactors lords_pf = {0.75995148, 0.24004852};
     Venue lords = {"Lords", "London", "ENG", &lords_pf};
-    Pregame pregame = {&lords, &aus, &nz};
+    Pregame pregame = {&lords, &world, &alltime};
 
     // Create a Match object
     Match m(pregame);
