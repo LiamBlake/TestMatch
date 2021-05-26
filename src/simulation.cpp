@@ -360,7 +360,8 @@ void Innings::simulate_delivery() {
                          (unsigned int)balls};
 
         // Print dismissal
-        std::cout << BUFFER + striker->print_card() << std::endl;
+        if (!is_quiet)
+            std::cout << BUFFER + striker->print_card() << std::endl;
 
         // Update match time
         // t_output = time->delivery(false, runs);

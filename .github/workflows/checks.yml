@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  build-and-test:
+  build-and-test-cpp:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -47,7 +47,7 @@ jobs:
       run: cmake --build build/ --target all
 
     - name: Run unit tests
-      run: cd build && ctest --verbose
+      run: build/test/unit_tests
 
   linter:
     runs-on: ubuntu-latest

@@ -134,6 +134,11 @@ BOOST_AUTO_TEST_CASE(testclass_bowlercard) {
         BOOST_TEST(bc.print_card() == outcomes[i].second);
     }
 
+    // Stress test
+    for (int i = 0; i < 600; i++)
+        bc.update_score("0");
+    BOOST_TEST(bc.print_card() == "TA Boult 102.5-100-33-1");
+
     // Test serialisation
     test_serialisation<BowlerCard>(&bc, "testfile_serial_bowlercard");
 }

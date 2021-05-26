@@ -384,8 +384,9 @@ void BowlerCard::add_ball() {
         if (is_maiden) {
             stats.maidens++;
             stats.spell_maidens++;
-            is_maiden = true;
         }
+
+        is_maiden = true;
 
     } else {
         stats.over_balls++;
