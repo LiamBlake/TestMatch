@@ -150,25 +150,25 @@ BowlerCard* BowlingManager::end_over(Innings* inns_obj) {
         // for death, or both.
     }
 
-    // As the current partnership grows, probability of bringing on a part-time
-    // bowler increases
+    // As the current partnership grows,
+    //  probability of bringing on a part -
+    //    time bowler increases
     // if (inns_obj->bowl1->get_competency() == 0 &&
-    //     inns_obj->bowl2->get_competency() == 0 &&
-    //     (double)rand() / (RAND_MAX) <
-    //         1.0 / (1 +
-    //                exp(-0.01 *
-    //                    (inns_obj->bat_parts[inns_obj->wkts]->get_runs() -
-    //                    100))
-    //                    -
-    //                1.0 / (1 + exp(1)))) {
-    //   return part_timer(inns_obj->bowl1, inns_obj->bowl2);
-    // }
+    //    inns_obj->bowl2->get_competency() == 0 &&
+    //    (double)rand() / (RAND_MAX) <
+    //       1.0 /
+    //         (1 +
+    //        exp(-0.01 *
+    //               (inns_obj->bat_parts[inns_obj->wkts]->get_runs() - 100)) -
+    //         1.0 / (1 + exp(1)))) {
+    //               return part_timer(inns_obj->bowl1, inns_obj->bowl2);
+    //         }
 
     // Decide whether to take the current bowler off
     double top = take_off_prob(inns_obj->bowl1->get_tiredness());
     if (inns_obj->bowl1->get_competency() != 0)
-        top *= 3; // Penalty for being a part time bowler
-    if (((double)rand() / (RAND_MAX)) < top) {
+        top *= 5; // Penalty for being a part time bowler
+    if (((double)rand() / (RAND_MAX)) < 1 / top) {
         // Change bowler
         // For now, just get the best full-time bowler
         return any_fulltime(inns_obj->bowl1, inns_obj->bowl2);

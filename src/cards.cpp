@@ -70,8 +70,8 @@ Player* Dismissal::get_fielder() { return fielder; }
     Fatigue implementations
 */
 // Distribution parameters
-double Fatigue::MEAN_PACE_FATIGUE = 5;
-double Fatigue::MEAN_SPIN_FATIGUE = 0.5;
+double Fatigue::MEAN_PACE_FATIGUE = 6;
+double Fatigue::MEAN_SPIN_FATIGUE = 2;
 double Fatigue::EXTRA_PACE_PENALTY = 1;
 double Fatigue::VAR_PACE_FATIGUE = 1;
 double Fatigue::VAR_SPIN_FATIGUE = 0.1;
@@ -113,7 +113,7 @@ void Fatigue::wicket() {
 void Fatigue::rest(double time) {
     // Ease fatigue
     if (value > 0)
-        value -= 3 * dist->mean();
+        value -= 5 * dist->mean();
 }
 
 Fatigue::~Fatigue() { delete dist; }
