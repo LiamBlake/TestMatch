@@ -8,9 +8,11 @@
 
 TestMatch is a cricket simulation library built in C++ and extended with Python. The core simulation is built in C++ and bound to the Python library using [Boost.Python](https://github.com/boostorg/python).
 
-More detail and documentation is available [here](https://testmatch.readthedocs.io).
+Full documentation is available [here](https://testmatch.readthedocs.io).
 
 ## Main Features
+TBD
+
 
 ## The Simulation
 
@@ -44,7 +46,7 @@ The C++ library works as a standalone and dynamically-linked library, which is b
 
 ### Tests
 
-More details soon.
+The C++ library is tested using [Boost.Test](https://github.com/boostorg/test). More details soon.
 
 ### Python Bindings
 
@@ -54,7 +56,7 @@ More details soon.
 
 This project is open-source, so any contributions are welcome via issues, discussion or pull requests.
 
-Code style is maintained by Clang (for C++) and a combination of [flake8](), [black]() and [isort]() (for Python), with customised rules defined in [.clang-format]() and [setup.cfg]() respectively. These are automatically checked with Github actions, so please ensure that any code in a pull request follows these style requirements.
+Code style is maintained by [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) (for C++) and a combination of [flake8](https://github.com/PyCQA/flake8), [black](https://github.com/psf/black) and [isort](https://github.com/PyCQA/isort) (for Python), with customised rules defined in [.clang-format](https://github.com/LiamBlake/TestMatch/blob/master/setup.cfg) and [setup.cfg](https://github.com/LiamBlake/TestMatch/blob/master/.clang-format) respectively. These are automatically checked with Github actions, so please ensure that any code in a pull request follows these style requirements.
 
 To develop the Python package, it is recommended that you use a virtual environment and setup the project from the root directory via
 
@@ -62,10 +64,10 @@ To develop the Python package, it is recommended that you use a virtual environm
 pip install -e . [dev]
 ```
 
+More detail coming soon.
+
 ## Future Work
 
 Some broad future goals for this project include:
-
-- Creating a customisabl
 
 - Extending to other formats of cricket, including men and women one-day matches and T20s.
