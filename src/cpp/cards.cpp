@@ -540,7 +540,7 @@ Over::~Over() {
 }
 
 //~~~~~~~~~~~~~~ Extras implementations ~~~~~~~~~~~~~~//
-Extras::Extras() : byes(0), legbyes(0), noballs(0), wides(0) {}
+Extras::Extras() : n_noballs(0), byes(0), legbyes(0), noballs(0), wides(0) {}
 
 bool Extras::update_score(std::string outcome) {
     int runs = outcome.front() - '0';
@@ -557,6 +557,7 @@ bool Extras::update_score(std::string outcome) {
     } else if (query == "nb") {
         // No ball, illegal delivery
         noballs += runs;
+        n_noballs++;
         return false;
     } else if (query == "wd") {
         // Wides, illegal delivery

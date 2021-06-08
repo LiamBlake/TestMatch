@@ -341,6 +341,8 @@ class Over {
 
 class Extras {
   private:
+    unsigned int
+        n_noballs; // Primarily for testing - the number of no balls bowled
     unsigned int byes;
     unsigned int legbyes;
     unsigned int noballs;

@@ -90,8 +90,10 @@ BOOST_FIXTURE_TEST_CASE(testclass_simulation, F_Pregame) {
     // ensure that things are running as expected. Lower-level functionality
     // should be captured by tests of the individual objects.
 
+    int N_TRIALS = 100;
+
     // Simulate an innings several times, to ensure running without error
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < N_TRIALS; i++) {
         Innings inn(&aus, &nz, 0, &pf);
         inn.simulate(true);
 
@@ -111,16 +113,25 @@ BOOST_FIXTURE_TEST_CASE(testclass_simulation, F_Pregame) {
         BOOST_TEST(inn.legal_delivs == sum_balls);
 
         // The individual batter scores and extras add up to team total.
-        int sum_runs = inn.extras.total();
+        // A no ball counts as a ball faced by the batter, and any runs scored
+        // (other than the penalty) run are credited towards them. This
+        // complicates testing so we have to do the following adjustment.
+        int sum_runs =
+            inn.extras.total() - inn.extras.noballs + inn.extras.n_noballs;
+        int sum_balls_faced = 0;
         for (int i = 0; i < 11; i++) {
             sum_runs += inn.batters[i]->get_sim_stats().runs;
+            sum_balls_faced += inn.batters[i]->get_sim_stats().balls;
         }
+
         BOOST_TEST(inn.team_score == sum_runs);
+        // No balls are counted as faced by the batter
+        BOOST_TEST(inn.legal_delivs == sum_balls_faced - inn.extras.n_noballs);
     }
 
     // Run the full simulation several times, to ensure that the simulation runs
     // without error.
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < N_TRIALS; i++) {
         Match sim(pregame);
         sim.start();
     }
