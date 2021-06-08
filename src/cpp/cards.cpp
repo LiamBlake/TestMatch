@@ -122,7 +122,7 @@ Fatigue::~Fatigue() { delete dist; }
     PlayerCard implementations
 */
 PlayerCard::PlayerCard(Player* c_player, int c_order)
-    : player(c_player), order(c_order) {}
+    : player(c_player), order(c_order), activated(false) {}
 
 Player* PlayerCard::get_player_ptr() { return player; }
 
@@ -147,7 +147,6 @@ BatterCard::BatterCard(Player* c_player, int c_order)
     stats.fours = 0;
     stats.sixes = 0;
 
-    active = false;
     out = false;
 }
 
@@ -164,6 +163,8 @@ void BatterCard::activate() {
 }
 
 void BatterCard::update_score(std::string outcome) {
+    if (!activated)
+        activated = true;
 
     if (outcome == "W") {
         stats.balls++;
@@ -293,6 +294,7 @@ BowlerCard::BowlerCard(Player* c_player, int c_order)
     stats.balls = 0;
     stats.overs = 0;
     stats.over_balls = 0;
+    stats.legal_balls = 0;
     stats.maidens = 0;
     stats.runs = 0;
     stats.wickets = 0;
@@ -304,8 +306,6 @@ BowlerCard::BowlerCard(Player* c_player, int c_order)
     stats.spell_wickets = 0;
 
     is_maiden = true;
-
-    active = false;
 
     competency = DETERMINE_COMPETENCY(c_player);
 }
@@ -349,10 +349,7 @@ double BowlerCard::get_tiredness() { return tiredness.get_value(); }
 
 int BowlerCard::get_competency() { return competency; }
 
-void BowlerCard::over_rest() {
-    active = false;
-    tiredness.rest(0);
-}
+void BowlerCard::over_rest() { tiredness.rest(0); }
 
 std::string BowlerCard::print_card(void) {
     std::string output = player->get_full_initials() + " ";
@@ -377,6 +374,7 @@ std::string BowlerCard::print_spell(void) {
 
 void BowlerCard::add_ball() {
 
+    stats.legal_balls++;
     if (stats.over_balls == 5) {
         stats.overs++;
         stats.over_balls = 0;
@@ -394,8 +392,12 @@ void BowlerCard::add_ball() {
 }
 
 void BowlerCard::update_score(std::string outcome) {
+    if (!activated)
+        activated = true;
 
     stats.balls++;
+
+    // Update fatigue
     tiredness.ball_bowled();
 
     if (outcome == "W") {
@@ -405,6 +407,7 @@ void BowlerCard::update_score(std::string outcome) {
         tiredness.wicket();
 
     } else if (outcome.length() == 1) {
+        // Legal delivery without wicket
         stats.runs += stoi(outcome);
         stats.spell_runs += stoi(outcome);
 
@@ -428,9 +431,6 @@ void BowlerCard::update_score(std::string outcome) {
         // Byes or leg byes
         add_ball();
     }
-
-    // Update fatigue
-    tiredness.ball_bowled();
 }
 
 template <typename T>

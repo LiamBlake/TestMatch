@@ -342,6 +342,7 @@ void Innings::simulate_delivery() {
     // Handle each outcome case
     if (outcome == "W") {
         wkts++;
+        legal_delivs++;
 
         // Randomly choose the type of dismissal
         DismType dism =
@@ -557,9 +558,7 @@ std::string Innings::score() {
 std::string Innings::simulate(bool quiet) {
     is_quiet = quiet;
 
-    if (is_quiet) {
-        std::cout << "Simulating innings..." << std::endl;
-    } else {
+    if (!is_quiet) {
         // Pre-innings chatter
         std::cout
             << "Here come the teams...\n"

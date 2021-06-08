@@ -159,6 +159,7 @@ class PlayerCard {
   protected:
     Player* player;
     int order;
+    bool activated;
 
   public:
     // Constructors
