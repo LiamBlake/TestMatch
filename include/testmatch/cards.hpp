@@ -349,8 +349,8 @@ class Extras {
     Extras();
 
     bool update_score(std::string outcome);
-    std::string print();
-    int total();
+    std::string print() const;
+    int total() const;
 };
 
 struct FOW {
