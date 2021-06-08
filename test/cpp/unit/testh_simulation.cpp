@@ -79,11 +79,51 @@ BOOST_AUTO_TEST_CASE(testfeature_followon) {
 
     // Ensure fit matches that expected by R
     double eps = 0.0001;
-    // For some reason, these tests fail when compiled and run on MacOS
-    // BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(200) - 0.1386838) < eps);
-    // BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(250) - 0.3812311) < eps);
-    // BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(350) - 0.7442012) < eps);
-    // BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(500) - 0.9046413) < eps);
+    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(200) - 0.1386838) < eps);
+    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(250) - 0.3812311) < eps);
+    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(350) - 0.7442012) < eps);
+    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(500) - 0.9046413) < eps);
+}
+
+BOOST_FIXTURE_TEST_CASE(testclass_simulation, F_Pregame) {
+    // NOTE: These tests mainly check higher-level aspects of the simulation, to
+    // ensure that things are running as expected. Lower-level functionality
+    // should be captured by tests of the individual objects.
+
+    // Simulate an innings several times, to ensure running without error
+    for (int i = 0; i < 50; i++) {
+        Innings inn(&aus, &nz, 0, &pf);
+        inn.simulate(true);
+
+        // Check that innings has closed appropriately
+        BOOST_TEST(inn.wkts == 10);
+        // TODO: Check for declaration flag when implemented
+
+        // Check that things make sense, e.g.
+        // Batting team have not somehow lost runs.
+        BOOST_TEST(inn.lead >= 0);
+
+        // The overs bowled by individual bowlers adds up to the innings total
+        int sum_balls = 0;
+        for (int i = 0; i < 11; i++) {
+            sum_balls += inn.bowlers[i]->get_sim_stats().legal_balls;
+        }
+        BOOST_TEST(inn.legal_delivs == sum_balls);
+
+        // The individual batter scores and extras add up to team total.
+        int sum_runs = inn.extras.total();
+        for (int i = 0; i < 11; i++) {
+            sum_runs += inn.batters[i]->get_sim_stats().runs;
+        }
+        BOOST_TEST(inn.team_score == sum_runs);
+    }
+
+    // Run the full simulation several times, to ensure that the simulation runs
+    // without error.
+    for (int i = 0; i < 50; i++) {
+        Match sim(pregame);
+        sim.start();
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
