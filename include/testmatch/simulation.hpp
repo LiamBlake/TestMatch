@@ -23,9 +23,6 @@
 // Forward declaration allows for referencing Innings object in managers
 class Innings;
 
-// Match details required in delivery model
-struct MatchStats {};
-
 /**
  * @brief Manages batting order by passing BatterCard pointers to Innings
  *

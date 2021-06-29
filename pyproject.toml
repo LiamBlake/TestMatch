@@ -1,10 +1,2 @@
 [build-system]
-requires = ["setuptools", "wheel", "scikit-build", "cmake", "pybind11"]
-build-backend = "setuptools.build_meta"
-
-[pytest]
-testpaths = "test/python"
-norecursedirs = "extern/*"
-
-[tool.flake8]
-max-line-length=100
+requires = ["setuptools", "wheel", "scikit-build", "cmake", "pybind11", "ninja"]

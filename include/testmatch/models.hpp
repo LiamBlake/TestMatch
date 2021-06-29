@@ -29,6 +29,16 @@ double MODEL_TOSS_ELECT(double spin_factor);
  * @param bat
  * @param bowl
  * @param match
+ * @return
+ */
+double prob_wkt(BatStats bat, BowlStats bowl, MatchStats match);
+
+/**
+ * @brief
+ *
+ * @param bat
+ * @param bowl
+ * @param match
  * @return double*
  */
 double* MODEL_DELIVERY(BatStats bat, BowlStats bowl);

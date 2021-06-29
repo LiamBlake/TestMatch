@@ -4,37 +4,67 @@ These mirror many of the structs defined in the core C++ library."""
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
-from json import JSONEncoder
-from typing import List
+from typing import List, Optional
 
-from ._base import InputStruct
+from dataclasses_json import dataclass_json
+
+from ._base import cppable
 from ._testmatch import _PitchFactors, _Player, _Stats, _Team, _Venue
+from .enums import Arm, BowlType
 
 
-@dataclass
+def jsoninput(cls=None, **kwargs):
+    def wrapper(cls):
+        @classmethod
+        def dump(cls, obj, file: str):
+            jsoned = obj.to_dict()
+            with open(file, "w") as fp:
+                json.dump(jsoned, fp=fp, indent=4)
+
+        @classmethod
+        def load(cls, file: str):
+            with open(file) as fp:
+                jsoned = json.load(fp)
+            return cls.from_dict(jsoned)
+
+        # Apply dataclass decorators
+        cls = dataclass(cls, **kwargs)
+        cls = dataclass_json(cls)
+
+        # Set dump and load attributes
+        setattr(cls, "dump", dump)
+        setattr(cls, "load", load)
+
+        return cls
+
+    if cls is None:
+        return wrapper
+    else:
+        return wrapper(cls)
+
+
+@cppable(cpp_rep=_Stats)
+@jsoninput
 class Stats:
 
     innings: int
-    bat_avg: float
-    bat_sr: float
+    bat_avg: Optional[float]
+    bat_sr: Optional[float]
 
     balls_bowled: int
-    bowl_avg: float
-    bowl_sr: float
+    bowl_avg: Optional[float]
+    bowl_sr: Optional[float]
     bowl_econ: float
 
-    bat_arm: int
-    bowl_arm: int
-    bowl_type: int
-
-    @property
-    @staticmethod
-    def cpp_rep():
-        return _Stats
+    bat_arm: Arm = Arm.right
+    bowl_arm: Arm = Arm.right
+    bowl_type: BowlType = BowlType.med
 
 
-@dataclass(frozen=True)
+@cppable(cpp_rep=_Player)
+@jsoninput(frozen=True)
 class Player:
 
     first_name: str
@@ -51,17 +81,9 @@ class Player:
     def full_initials(self) -> str:
         return f"{self.initials} {self.last_name}"
 
-    class _encoder(JSONEncoder):
-        def default(self, o):
-            pass
 
-    @property
-    @staticmethod
-    def cpp_rep():
-        return _Player
-
-
-@dataclass
+@cppable(cpp_rep=_Team)
+@jsoninput
 class Team:
     name: str
     players: List[Player]
@@ -80,32 +102,20 @@ class Team:
             if i == self.idx_wk:
                 output += " (wk)"
             output += "\n"
-
-    @property
-    @staticmethod
-    def cpp_rep():
-        return _Team
+        return output
 
 
-@dataclass
+@cppable(cpp_rep=_PitchFactors)
+@jsoninput
 class PitchFactors:
     seam: float
     spin: float
 
-    @property
-    @staticmethod
-    def cpp_rep():
-        return _PitchFactors
 
-
-@dataclass(frozen=True)
+@cppable(cpp_rep=_Venue)
+@jsoninput(frozen=True)
 class Venue:
     name: str
     city: str
     country: str
     pitch: PitchFactors
-
-    @property
-    @staticmethod
-    def cpp_rep():
-        return _Venue

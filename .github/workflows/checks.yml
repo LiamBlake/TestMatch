@@ -53,6 +53,9 @@ jobs:
       - name: Install package and dependencies
         run: python -m pip install -e .[dev]
 
+      - name: Create test file directory
+        run: mkdir -p testfiles
+
       - name: Run Python tests
         run: pytest
 
@@ -61,9 +64,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: DoozyX/clang-format-lint-action@v0.11
+      - uses: DoozyX/clang-format-lint-action@v0.12
         with:
           source: "src include"
           extensions: "h,cpp"
           clangFormatVersion: 11
           exclude: test/* extern/*
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install package and dependencies
+        run: python -m pip install -e .[dev]
+
+      - name: Lint with flake8
+        run: flake8 src/testmatch
+
+      - name: Lint with black
+        run: black --check src/testmatch
+
+      - name: Type checking with mypy
+        run: mypy src/testmatch

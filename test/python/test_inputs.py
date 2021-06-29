@@ -1,4 +1,4 @@
-from pytest import fixture
+from pytest import fixture, mark
 from testmatch import Player, Stats
 
 
@@ -33,3 +33,14 @@ class TestPlayer:
 
         assert player.full_name == "Pat Cummins"
         assert player.full_initials == "PJ Cummins"
+
+
+@mark.parametrize("fixture", ["stats1", "player1", "venue"])
+class TestCppReps:
+    def test_to_cpp(self, fixture, request):
+        obj = request.getfixturevalue(fixture)
+
+        cpp_obj = obj.cpp
+
+        # TODO: Check members
+        assert cpp_obj

@@ -1,8 +1,8 @@
-# Compile example simulation
-add_executable(demo demonstrative_test.cpp)
-target_include_directories(demo PUBLIC ${CMAKE_SOURCE_DIR}/include )
-target_link_libraries(demo PUBLIC
-  TestMatch
+# Boost dependency
+find_package(Boost 1.70.0 COMPONENTS unit_test_framework REQUIRED)
+include_directories(
+  ${Boost_INCLUDE_DIR} 
+  ${CMAKE_SOURCE_DIR}/include
 )
 
 # Register as test

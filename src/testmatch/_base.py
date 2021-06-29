@@ -1,34 +1,40 @@
 from __future__ import annotations
 
-from abc import ABC, abstractclassmethod, abstractmethod, abstractstaticmethod
+from enum import Enum
 from typing import Type
 
+# To resolve missing definitions
+from ._testmatch import _Arm, _BowlType  # noqa: F401
 
-class InputStruct(ABC):
-    """Abstract base for a dataclass which corresponds to a C++ struct and is provided as input to
-    the simulation.
 
-    These classes . They must define methods for serialising and deserialising via JSON.
-    """
+def cppable(cpp_rep: Type):
+    def wrapper(cls):
+        @classmethod
+        def from_cpp(cls, cpp_obj):
+            pass
 
-    # There is currently no need to convert C++ structs back to the Python equivalents.
-    # @classmethod
-    # def from_cpp(cls, cpp_obj) -> InputStruct:
-    #     pass
+        @property
+        def cpp(self):
+            fields = self.__dict__
+            # Recursively convert any cppable members to cpp
+            for key, value in fields.items():
+                # TODO: This needs to be reconsidered
+                # Enums are special
+                if isinstance(value, Enum):
+                    print(value, key, fields[key])
+                    fields[key] = eval(f"_{type(value).__name__}").__members__[value]
+                # Some are stored as lists
+                elif isinstance(value, list):
+                    fields[key] = [v.cpp if hasattr(v, "cpp") else v for v in value]
+                elif hasattr(value, "cpp"):
+                    fields[key] = value.cpp
 
-    def to_cpp(self):
-        # Convert each member to keyword arguments
-        pass
+            return self._cpp_rep(*fields.values())
 
-    @property
-    @abstractstaticmethod
-    def cpp_rep() -> Type:
-        pass
+        setattr(cls, "_cpp_rep", cpp_rep)
+        setattr(cls, "from_cpp", from_cpp)
+        setattr(cls, "cpp", cpp)
 
-    @abstractclassmethod
-    def from_jsons(cls, jsons: str) -> InputStruct:
-        pass
+        return cls
 
-    @abstractmethod
-    def to_jsons(self) -> str:
-        pass
+    return wrapper

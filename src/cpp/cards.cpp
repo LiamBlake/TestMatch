@@ -135,8 +135,8 @@ BatterCard::BatterCard(Player* c_player, int c_order)
     // Assume that batter has arrived at crease when object is created
 
     // Career averages
-    stats.bat_avg = c_player->get_bat_avg();
-    stats.strike_rate = c_player->get_bat_sr();
+    stats.career_bat_avg = c_player->get_bat_avg();
+    stats.career_strike_rate = c_player->get_bat_sr();
 
     // Batting hand
     // false: right, true: left
@@ -153,6 +153,10 @@ BatterCard::BatterCard(Player* c_player, int c_order)
 BatStats BatterCard::get_sim_stats() { return stats; }
 
 bool BatterCard::is_active() { return active; }
+
+bool BatterCard::is_out() { return out; }
+
+Dismissal* BatterCard::get_dism() { return dism; };
 
 void BatterCard::activate() {
     if (!active) {

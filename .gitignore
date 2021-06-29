@@ -2,6 +2,8 @@
 build/
 lib/
 bin/
+_skbuild/
+_cmake_test_compile/
 
 .vscode/
 
@@ -148,4 +150,4 @@ cython_debug/
 html/
 xml/
 
-_skbuild/
+testfiles/

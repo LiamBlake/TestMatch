@@ -14,9 +14,9 @@
 #include "testmatch/helpers.hpp"
 
 #include <cmath>
+#include <iostream>
 #include <string>
 #include <vector>
-
 namespace Model {
 
 int NUM_DELIV_OUTCOMES = 22;
@@ -43,6 +43,17 @@ double MODEL_TOSS_ELECT(double spin_factor) {
     // Exponential model
     double a = 0.05;
     return a * exp(log(0.9 / a) * spin_factor);
+}
+
+double prob_wkt(BatStats bat, BowlStats bowl, MatchStats match) {
+    double bat_sr = bat.career_strike_rate;
+    double bat_avg = bat.career_bat_avg;
+    if (bat_sr == 0)
+        bat_sr = 50;
+    if (bat_avg == 0)
+        bat_avg = 5;
+
+    return 0.5 * (bat_sr / (100 * bat_avg) + 1 / bowl.strike_rate);
 }
 
 /**
@@ -112,7 +123,6 @@ double* MODEL_DELIVERY(BatStats bat, BowlStats bowl) {
         output[18] = 0.978234039;
         output[19] = 0.978241474;
         output[20] = 0.978267496;
-        output[21] = 0.985367921;
     } else {
         output[0] = 0;
         output[1] = 0.72505691;
@@ -135,7 +145,15 @@ double* MODEL_DELIVERY(BatStats bat, BowlStats bowl) {
         output[18] = 0.981426065;
         output[19] = 0.981497202;
         output[20] = 0.981855259;
-        output[21] = 0.983420279;
+    }
+
+    // Wicket probability
+    double wkt_value = 1 - prob_wkt(bat, bowl, {});
+    output[21] = wkt_value;
+
+    // Rescale fixed probabilities
+    for (int i = 0; i < NUM_DELIV_OUTCOMES - 1; i++) {
+        output[i] = output[i] * wkt_value;
     }
 
     return output;
