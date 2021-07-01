@@ -1,14 +1,3 @@
-/**
- * @file Model.cpp
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2021-03-23
- *
- * @copyright Copyright (c) 2021
- *
- */
-
 #include "testmatch/models.hpp"
 
 #include "testmatch/helpers.hpp"
@@ -17,15 +6,44 @@
 #include <iostream>
 #include <string>
 #include <vector>
-namespace Model {
 
-int NUM_DELIV_OUTCOMES = 22;
-std::vector<std::string> DELIV_OUTCOMES = {
-    "0", "1",  "1b",  "1lb", "1nb", "1wd", "2", "2b",  "2lb", "2nb", "2wd",
-    "3", "3b", "3lb", "4",   "4b",  "4lb", "5", "5nb", "5wd", "6",   "W"};
-int NUM_DISM_MODES = 6;
-std::vector<DismType> DISM_MODES_STATIC = {bowled, caught,  c_and_b,
-                                           lbw,    run_out, stumped};
+namespace prediction {
+
+// Constants used internally within the prediction namespace
+// TODO: Find a better way of avoiding hardcoding these within the prediction
+// functions. Perhaps enums? This approach feels clunky.
+// All possible wicket-related outcomes
+static const int N_OUTCOMES_WKT = 2;
+static const std::string OUTCOMES_WKT[2] = {"no", "W"};
+
+// All possible types of extras
+static const int N_EXTRAS = 5;
+static const std::string EXTRAS[5] = {"legal", "b", "lb", "nb", "wd"};
+
+// All possible outcomes when byes occurs
+static const int N_OUTCOMES_BYE = 4;
+static const std::string OUTCOMES_BYE[4] = {"1b", "2b", "3b", "4b"};
+
+// All possible outcomes when legbyes occur
+static const int N_OUTCOMES_LEGBYE = 4;
+static const std::string OUTCOMES_LEGBYE[4] = {"1lb", "2lb", "3lb", "4lb"};
+
+// All possible outcomes when a no-ball occurs.
+static const int N_OUTCOMES_NOBALL = 7;
+static const std::string OUTCOMES_NOBALL[7] = {"1nb", "2nb", "3nb", "4nb",
+                                               "5nb", "6nb", "7nb"};
+
+// All possible outcomes when wides occur
+static const int N_OUTCOMES_WIDE = 5;
+static const std::string OUTCOMES_WIDE[5] = {"1wd", "2wd", "3wd", "4wd", "5wd"};
+
+// All possible outcomes on a legal delivery where no wicket falls
+static const int N_OUTCOMES_LEGAL = 7;
+static const std::string OUTCOMES_WIDE[7] = {"0", "1", "2", "3", "4", "5", "6"};
+
+static const int N_DISM_MODES = 6;
+static const DismType DISM_MODES[6] = {bowled, caught,  c_and_b,
+                                       lbw,    run_out, stumped};
 
 /* Somewhat terrible fit to the toss elect probabilities in actual data
  * Note that spin_factor = 1 - seam_factor, so we only need to consider
@@ -194,4 +212,4 @@ DismType MODEL_WICKET_TYPE(BowlType bowltype) {
     delete[] DISM_MODES;
     return dism_mode;
 }
-} // namespace Model
+} // namespace prediction
