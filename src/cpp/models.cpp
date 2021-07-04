@@ -109,7 +109,7 @@ double OBJ_AVG_FATIG(double bowl_avg, double bowl_sr, double fatigue) {
 /**
  *
  */
-double MODEL_DECLARATION(int lead, int match_balls, bool is_wkt, int innings) {
+double declaration(int lead, int match_balls, bool is_wkt, int innings) {
     return 0;
 }
 
