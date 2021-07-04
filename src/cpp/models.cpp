@@ -73,35 +73,157 @@ double wkt(BatStats bat, BowlStats bowl, MatchStats match) {
 
 std::map<std::string, double> extras(BatStats bat, BowlStats bowl,
                                      MatchStats match) {
-    Arm bowl_arm = bowl.bowl_arm;
     BowlType bowl_type = bowl.bowl_type;
+    std::map<std::string, double> probs;
+
+    // Proportions in training set
+    if (is_slow_bowler(bowl_type)) {
+        probs["legal"] = 0.990817857;
+        probs["b"] = 0.003292401868;
+        probs["lb"] = 0.003719194703;
+        probs["nb"] = 0.001856548831;
+        probs["wd"] = 0.0003139975856;
+    } else {
+        probs["legal"] = 0.9782529292;
+        probs["b"] = 0.00264093429;
+        probs["lb"] = 0.008270847795;
+        probs["nb"] = 0.007190378661;
+        probs["wd"] = 0.0003644910034;
+    }
+
+    return probs;
 }
 
 std::map<std::string, double> bat_runs(BatStats bat, BowlStats bowl,
                                        MatchStats match) {
-    double bat_sr = bat.career_strike_rate;
+
+    std::map<std::string, double> probs;
+    // Proportions in training set
+    if (is_slow_bowler(bowl.bowl_type)) {
+        probs["0"] = 0.7147801954;
+        probs["1"] = 0.1855416349;
+        probs["2"] = 0.03641051517;
+        probs["3"] = 0.007405789253;
+        probs["4"] = 0.04837300318;
+        probs["5"] = 0.000132301179;
+        probs["6"] = 0.007356560908;
+    } else {
+        probs["0"] = 0.7559881849;
+        probs["1"] = 0.1237926377;
+        probs["2"] = 0.03802177309;
+        probs["3"] = 0.01080834876;
+        probs["4"] = 0.06951044768;
+        probs["5"] = 0.0001935298476;
+        probs["6"] = 0.001685078067;
+    }
+
+    return probs;
 }
 
 std::map<std::string, double> byes_runs(BatStats bat, BowlStats bowl,
-                                        MatchStats match) {}
+                                        MatchStats match) {
+    std::map<std::string, double> probs;
+    // Proportions in training set
+    // TODO: Correct proportions
+    if (is_slow_bowler(bowl.bowl_type)) {
+        probs["0"] = 0.7147801954;
+        probs["1"] = 0.1855416349;
+        probs["2"] = 0.03641051517;
+        probs["3"] = 0.007405789253;
+        probs["4"] = 0.04837300318;
+        probs["5"] = 0.000132301179;
+        probs["6"] = 0.007356560908;
+    } else {
+        probs["0"] = 0.7559881849;
+        probs["1"] = 0.1237926377;
+        probs["2"] = 0.03802177309;
+        probs["3"] = 0.01080834876;
+        probs["4"] = 0.06951044768;
+        probs["5"] = 0.0001935298476;
+        probs["6"] = 0.001685078067;
+    }
+
+    return probs;
+}
 
 std::map<std::string, double> legbyes_runs(BatStats bat, BowlStats bowl,
-                                           MatchStats match) {}
+                                           MatchStats match) {
+    std::map<std::string, double> probs;
+    // Proportions in training set
+    // TODO: Correct proportions
+    if (is_slow_bowler(bowl.bowl_type)) {
+        probs["0"] = 0.7147801954;
+        probs["1"] = 0.1855416349;
+        probs["2"] = 0.03641051517;
+        probs["3"] = 0.007405789253;
+        probs["4"] = 0.04837300318;
+        probs["5"] = 0.000132301179;
+        probs["6"] = 0.007356560908;
+    } else {
+        probs["0"] = 0.7559881849;
+        probs["1"] = 0.1237926377;
+        probs["2"] = 0.03802177309;
+        probs["3"] = 0.01080834876;
+        probs["4"] = 0.06951044768;
+        probs["5"] = 0.0001935298476;
+        probs["6"] = 0.001685078067;
+    }
+
+    return probs;
+}
 
 std::map<std::string, double> wides_runs(BatStats bat, BowlStats bowl,
-                                         MatchStats match) {}
+                                         MatchStats match) {
+    // Proportions in training set
+    // TODO: Correct proportions
+    std::map<std::string, double> probs;
+    if (is_slow_bowler(bowl.bowl_type)) {
+        probs["0"] = 0.7147801954;
+        probs["1"] = 0.1855416349;
+        probs["2"] = 0.03641051517;
+        probs["3"] = 0.007405789253;
+        probs["4"] = 0.04837300318;
+        probs["5"] = 0.000132301179;
+        probs["6"] = 0.007356560908;
+    } else {
+        probs["0"] = 0.7559881849;
+        probs["1"] = 0.1237926377;
+        probs["2"] = 0.03802177309;
+        probs["3"] = 0.01080834876;
+        probs["4"] = 0.06951044768;
+        probs["5"] = 0.0001935298476;
+        probs["6"] = 0.001685078067;
+    }
+
+    return probs;
+}
 
 std::map<std::string, double> noballs_runs(BatStats bat, BowlStats bowl,
-                                           MatchStats match) {}
+                                           MatchStats match) {
+    // Proportions in training set
+    // TODO: Correct proportions
+    std::map<std::string, double> probs;
+    if (is_slow_bowler(bowl.bowl_type)) {
+        probs["0"] = 0.7147801954;
+        probs["1"] = 0.1855416349;
+        probs["2"] = 0.03641051517;
+        probs["3"] = 0.007405789253;
+        probs["4"] = 0.04837300318;
+        probs["5"] = 0.000132301179;
+        probs["6"] = 0.007356560908;
+    } else {
+        probs["0"] = 0.7559881849;
+        probs["1"] = 0.1237926377;
+        probs["2"] = 0.03802177309;
+        probs["3"] = 0.01080834876;
+        probs["4"] = 0.06951044768;
+        probs["5"] = 0.0001935298476;
+        probs["6"] = 0.001685078067;
+    }
 
-/**
- * @brief
- *
- * THIS WILL BE REPLACED WITH A MODEL WHICH ACTUALLY USES REAL DATA, RATHER THAN
- * MY OWN BLIND INTUITION
- *
- *
- */
+    return probs;
+}
+
 double OBJ_AVG_FATIG(double bowl_avg, double bowl_sr, double fatigue) {
     return 3.0 / (1.0 / bowl_avg + 1.0 / bowl_sr + 1.0 / (fatigue + 1));
 }

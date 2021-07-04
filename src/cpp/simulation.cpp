@@ -334,6 +334,7 @@ void Innings::simulate_delivery() {
 
     // Handle each outcome case
     if (outcome == "W") {
+        std::cout << "a" << std::endl;
         wkts++;
         legal_delivs++;
 

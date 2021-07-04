@@ -126,11 +126,15 @@ S sample_pf_map(std::map<S, double> probs) {
 
     // Iterate through CDF until the first entry > r is found
     double sum_prob = 0;
+    S sampled_key;
     for (auto const& [key, val] : probs) {
-        if (r > sum_prob)
-            return key;
         sum_prob += val;
+        sampled_key = key;
+        if (r > sum_prob)
+            break;
     }
+
+    return sampled_key;
 };
 
 // Converts ball count to overs and balls
