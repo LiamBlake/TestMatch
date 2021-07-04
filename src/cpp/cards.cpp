@@ -70,8 +70,8 @@ Player* Dismissal::get_fielder() { return fielder; }
     Fatigue implementations
 */
 // Distribution parameters
-double Fatigue::MEAN_PACE_FATIGUE = 5;
-double Fatigue::MEAN_SPIN_FATIGUE = 0.5;
+double Fatigue::MEAN_PACE_FATIGUE = 6;
+double Fatigue::MEAN_SPIN_FATIGUE = 2;
 double Fatigue::EXTRA_PACE_PENALTY = 1;
 double Fatigue::VAR_PACE_FATIGUE = 1;
 double Fatigue::VAR_SPIN_FATIGUE = 0.1;
@@ -113,7 +113,7 @@ void Fatigue::wicket() {
 void Fatigue::rest(double time) {
     // Ease fatigue
     if (value > 0)
-        value -= 3 * dist->mean();
+        value -= 5 * dist->mean();
 }
 
 Fatigue::~Fatigue() { delete dist; }
@@ -121,14 +121,17 @@ Fatigue::~Fatigue() { delete dist; }
 /*
     PlayerCard implementations
 */
-PlayerCard::PlayerCard(Player* c_player) { player = c_player; }
+PlayerCard::PlayerCard(Player* c_player, int c_order)
+    : player(c_player), order(c_order), activated(false) {}
 
 Player* PlayerCard::get_player_ptr() { return player; }
 
+int PlayerCard::get_order() { return order; }
 /*
     BatterCard implementations
 */
-BatterCard::BatterCard(Player* c_player) : PlayerCard(c_player) {
+BatterCard::BatterCard(Player* c_player, int c_order)
+    : PlayerCard(c_player, c_order) {
     // Assume that batter has arrived at crease when object is created
 
     // Career averages
@@ -144,7 +147,6 @@ BatterCard::BatterCard(Player* c_player) : PlayerCard(c_player) {
     stats.fours = 0;
     stats.sixes = 0;
 
-    active = false;
     out = false;
 }
 
@@ -165,6 +167,8 @@ void BatterCard::activate() {
 }
 
 void BatterCard::update_score(std::string outcome) {
+    if (!activated)
+        activated = true;
 
     if (outcome == "W") {
         stats.balls++;
@@ -285,8 +289,8 @@ BatterCard::~BatterCard() {
 /*
     BatterCard implementations
 */
-BowlerCard::BowlerCard(Player* c_player)
-    : PlayerCard(c_player), tiredness(c_player->get_bowl_type()) {
+BowlerCard::BowlerCard(Player* c_player, int c_order)
+    : PlayerCard(c_player, c_order), tiredness(c_player->get_bowl_type()) {
     stats.bowl_avg = c_player->get_bowl_avg();
     stats.strike_rate = c_player->get_bowl_sr();
     stats.bowl_type = c_player->get_bowl_type();
@@ -294,6 +298,7 @@ BowlerCard::BowlerCard(Player* c_player)
     stats.balls = 0;
     stats.overs = 0;
     stats.over_balls = 0;
+    stats.legal_balls = 0;
     stats.maidens = 0;
     stats.runs = 0;
     stats.wickets = 0;
@@ -305,8 +310,6 @@ BowlerCard::BowlerCard(Player* c_player)
     stats.spell_wickets = 0;
 
     is_maiden = true;
-
-    active = false;
 
     competency = DETERMINE_COMPETENCY(c_player);
 }
@@ -350,17 +353,15 @@ double BowlerCard::get_tiredness() { return tiredness.get_value(); }
 
 int BowlerCard::get_competency() { return competency; }
 
-void BowlerCard::over_rest() {
-    active = false;
-    tiredness.rest(0);
-}
+void BowlerCard::over_rest() { tiredness.rest(0); }
 
 std::string BowlerCard::print_card(void) {
     std::string output = player->get_full_initials() + " ";
 
-    output += std::to_string(stats.overs) + "." +
-              std::to_string(stats.over_balls) + "-";
-    output += std::to_string(stats.maidens) + "-";
+    output += std::to_string(stats.overs);
+    if (stats.over_balls > 0)
+        output += "." + std::to_string(stats.over_balls);
+    output += "-" + std::to_string(stats.maidens) + "-";
     output += std::to_string(stats.runs) + "-";
     output += std::to_string(stats.wickets);
 
@@ -370,17 +371,14 @@ std::string BowlerCard::print_card(void) {
 std::string BowlerCard::print_spell(void) {
     std::string output = player->get_full_initials() + " ";
 
-    output += std::to_string(stats.spell_overs) + "." +
-              std::to_string(stats.over_balls) + "-";
-    output += std::to_string(stats.spell_maidens) + "-";
-    output += std::to_string(stats.spell_runs) + "-";
-    output += std::to_string(stats.spell_wickets);
+    // TODO: Implement
 
     return output;
 }
 
 void BowlerCard::add_ball() {
 
+    stats.legal_balls++;
     if (stats.over_balls == 5) {
         stats.overs++;
         stats.over_balls = 0;
@@ -388,8 +386,9 @@ void BowlerCard::add_ball() {
         if (is_maiden) {
             stats.maidens++;
             stats.spell_maidens++;
-            is_maiden = true;
         }
+
+        is_maiden = true;
 
     } else {
         stats.over_balls++;
@@ -397,8 +396,12 @@ void BowlerCard::add_ball() {
 }
 
 void BowlerCard::update_score(std::string outcome) {
+    if (!activated)
+        activated = true;
 
     stats.balls++;
+
+    // Update fatigue
     tiredness.ball_bowled();
 
     if (outcome == "W") {
@@ -408,6 +411,7 @@ void BowlerCard::update_score(std::string outcome) {
         tiredness.wicket();
 
     } else if (outcome.length() == 1) {
+        // Legal delivery without wicket
         stats.runs += stoi(outcome);
         stats.spell_runs += stoi(outcome);
 
@@ -431,9 +435,6 @@ void BowlerCard::update_score(std::string outcome) {
         // Byes or leg byes
         add_ball();
     }
-
-    // Update fatigue
-    tiredness.ball_bowled();
 }
 
 template <typename T>
@@ -477,7 +478,7 @@ PlayerCard** sort_array(PlayerCard** list, int len,
 BatterCard** create_batting_cards(Team* team) {
     BatterCard** cards = new BatterCard*[11];
     for (int i = 0; i < 11; i++) {
-        cards[i] = new BatterCard(team->players[i]);
+        cards[i] = new BatterCard(team->players[i], i);
     }
 
     return cards;
@@ -485,7 +486,7 @@ BatterCard** create_batting_cards(Team* team) {
 BowlerCard** create_bowling_cards(Team* team) {
     BowlerCard** cards = new BowlerCard*[11];
     for (int i = 0; i < 11; i++) {
-        cards[i] = new BowlerCard(team->players[i]);
+        cards[i] = new BowlerCard(team->players[i], i);
     }
 
     return cards;
@@ -543,7 +544,7 @@ Over::~Over() {
 }
 
 //~~~~~~~~~~~~~~ Extras implementations ~~~~~~~~~~~~~~//
-Extras::Extras() : byes(0), legbyes(0), noballs(0), wides(0) {}
+Extras::Extras() : n_noballs(0), byes(0), legbyes(0), noballs(0), wides(0) {}
 
 bool Extras::update_score(std::string outcome) {
     int runs = outcome.front() - '0';
@@ -560,6 +561,7 @@ bool Extras::update_score(std::string outcome) {
     } else if (query == "nb") {
         // No ball, illegal delivery
         noballs += runs;
+        n_noballs++;
         return false;
     } else if (query == "wd") {
         // Wides, illegal delivery
@@ -583,7 +585,7 @@ bool Extras::update_score(std::string outcome) {
 }
 
 // Print methods
-std::string Extras::print() {
+std::string Extras::print() const {
     std::vector<std::string> strings;
 
     if (byes > 0) {
@@ -605,7 +607,7 @@ std::string Extras::print() {
     return join_str(strings, ", ");
 }
 
-int Extras::total() { return byes + legbyes + noballs + wides; }
+int Extras::total() const { return byes + legbyes + noballs + wides; }
 
 std::string FOW::print() {
     std::string output = std::to_string(runs) + "-" + std::to_string(wkts) +
@@ -674,12 +676,12 @@ std::string MatchResult::print() {
         case draw:
             return "Match Drawn";
         case win_chasing:
-            return winner->name + "won by " + std::to_string(margin) +
+            return winner->name + " won by " + std::to_string(margin) +
                    " wickets";
         case win_bowling:
-            return winner->name + "won by " + std::to_string(margin) + " runs";
+            return winner->name + " won by " + std::to_string(margin) + " runs";
         case win_innings:
-            return winner->name + "won by an innings and " +
+            return winner->name + " won by an innings and " +
                    std::to_string(margin) + " runs";
         case tie:
             return "Match tied";

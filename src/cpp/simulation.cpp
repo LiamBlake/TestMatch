@@ -150,25 +150,25 @@ BowlerCard* BowlingManager::end_over(Innings* inns_obj) {
         // for death, or both.
     }
 
-    // As the current partnership grows, probability of bringing on a part-time
-    // bowler increases
+    // As the current partnership grows,
+    //  probability of bringing on a part -
+    //    time bowler increases
     // if (inns_obj->bowl1->get_competency() == 0 &&
-    //     inns_obj->bowl2->get_competency() == 0 &&
-    //     (double)rand() / (RAND_MAX) <
-    //         1.0 / (1 +
-    //                exp(-0.01 *
-    //                    (inns_obj->bat_parts[inns_obj->wkts]->get_runs() -
-    //                    100))
-    //                    -
-    //                1.0 / (1 + exp(1)))) {
-    //   return part_timer(inns_obj->bowl1, inns_obj->bowl2);
-    // }
+    //    inns_obj->bowl2->get_competency() == 0 &&
+    //    (double)rand() / (RAND_MAX) <
+    //       1.0 /
+    //         (1 +
+    //        exp(-0.01 *
+    //               (inns_obj->bat_parts[inns_obj->wkts]->get_runs() - 100)) -
+    //         1.0 / (1 + exp(1)))) {
+    //               return part_timer(inns_obj->bowl1, inns_obj->bowl2);
+    //         }
 
     // Decide whether to take the current bowler off
     double top = take_off_prob(inns_obj->bowl1->get_tiredness());
     if (inns_obj->bowl1->get_competency() != 0)
-        top *= 3; // Penalty for being a part time bowler
-    if (((double)rand() / (RAND_MAX)) < top) {
+        top *= 5; // Penalty for being a part time bowler
+    if (((double)rand() / (RAND_MAX)) < 1 / top) {
         // Change bowler
         // For now, just get the best full-time bowler
         return any_fulltime(inns_obj->bowl1, inns_obj->bowl2);
@@ -240,7 +240,8 @@ int Innings::NO_INNS = 0;
 // Printing variables
 bool Innings::AUSTRALIAN_STYLE = false;
 std::string Innings::DIVIDER =
-    "\n--------------------------------------------------------------------\n";
+    "\n-----------------------------------------------"
+    "------------------------------\n";
 std::string Innings::BUFFER = "   ";
 
 // Constructor
@@ -283,11 +284,6 @@ Innings::Innings(Team* c_team_bat, Team* c_team_bowl, int c_lead,
     bowl1 = bowlers[team_bowl->i_bowl1];
     bowl2 = bowlers[team_bowl->i_bowl2];
 
-    // This ain't a good implementation - get your functions sorted man
-    temp_outcomes = new std::string[Model::NUM_DELIV_OUTCOMES];
-    for (int i = 0; i < Model::NUM_DELIV_OUTCOMES; i++)
-        temp_outcomes[i] = Model::DELIV_OUTCOMES.at(i);
-
     // Set-up the first over
     first_over = last_over = new Over(1);
 
@@ -306,13 +302,11 @@ void Innings::simulate_delivery() {
     // Pass game information to delivery model
 
     // Get outcome probabilities
-    double* probs =
-        Model::MODEL_DELIVERY(striker->get_sim_stats(), bowl1->get_sim_stats());
+    std::map<std::string, double> probs = prediction::delivery(
+        striker->get_sim_stats(), bowl1->get_sim_stats(), {});
 
     // Simulate
-    std::string outcome = sample_cdf<std::string>(
-        temp_outcomes, Model::NUM_DELIV_OUTCOMES, probs);
-    delete[] probs;
+    std::string outcome = sample_pf_map<std::string>(probs);
 
     std::pair<int, std::string> t_output;
 
@@ -340,11 +334,14 @@ void Innings::simulate_delivery() {
 
     // Handle each outcome case
     if (outcome == "W") {
+        std::cout << "a" << std::endl;
         wkts++;
+        legal_delivs++;
 
         // Randomly choose the type of dismissal
-        DismType dism =
-            Model::MODEL_WICKET_TYPE(bowl1->get_player_ptr()->get_bowl_type());
+        std::map<DismType, double> dism_pf =
+            prediction::wkt_type(bowl1->get_player_ptr()->get_bowl_type());
+        DismType dism = sample_pf_map<DismType>(dism_pf);
 
         // Pick a fielder
         Player* fielder =
@@ -359,7 +356,8 @@ void Innings::simulate_delivery() {
                          (unsigned int)balls};
 
         // Print dismissal
-        std::cout << BUFFER + striker->print_card() << std::endl;
+        if (!is_quiet)
+            std::cout << BUFFER + striker->print_card() << std::endl;
 
         // Update match time
         // t_output = time->delivery(false, runs);
@@ -555,9 +553,7 @@ std::string Innings::score() {
 std::string Innings::simulate(bool quiet) {
     is_quiet = quiet;
 
-    if (is_quiet) {
-        std::cout << "Simulating innings..." << std::endl;
-    } else {
+    if (!is_quiet) {
         // Pre-innings chatter
         std::cout
             << "Here come the teams...\n"
@@ -596,62 +592,107 @@ std::string Innings::simulate(bool quiet) {
     return state;
 }
 
-std::string Innings::print() {
-    std::string output = "";
+std::ostream& operator<<(std::ostream& os, const Innings& inns) {
+    const int name_width = 20;
+    const int dism_width = 30;
 
     // Header
-    output += DIVIDER + BUFFER + team_bat->name + " " + ordinal(inns_no) +
-              " Innings\n";
-    output += DIVIDER + BUFFER + "Batter " + BUFFER + BUFFER + BUFFER + BUFFER +
-              BUFFER + BUFFER + BUFFER + BUFFER + BUFFER + BUFFER + BUFFER +
-              BUFFER + "R" + BUFFER + "B" + BUFFER + "4s" + BUFFER + "6s" +
-              BUFFER + "SR";
-    output += DIVIDER;
+    os << Innings::DIVIDER << inns.team_bat->name << " "
+       << ordinal(inns.inns_no) << " Innings" << Innings::DIVIDER;
+
+    // Titles
+    print_spaced<std::string>(os, "Batter", name_width);
+    print_spaced<std::string>(os, "", dism_width);
+    print_spaced<std::string>(os, "R", 5);
+    print_spaced<std::string>(os, "B", 5);
+    print_spaced<std::string>(os, "4s", 5);
+    print_spaced<std::string>(os, "6s", 5);
+    print_spaced<std::string>(os, "SR", 5);
+
+    os << Innings::DIVIDER;
 
     // Print each batter
     for (int i = 0; i < 11; i++) {
-        BatterCard* ptr = batters[i];
+        BatterCard* ptr = inns.batters[i];
         BatStats stats = ptr->get_sim_stats();
 
         // Calculate strike rate
-        double sr = (float)stats.runs / stats.balls * 100;
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(2) << sr;
-        std::string srs = stream.str();
+        std::string sr =
+            print_rounded((float)stats.runs / stats.balls * 100, 2);
+
+        // Player name - mark if captain or wicketkeeper
+        std::string name = ptr->get_player_ptr()->get_full_initials();
+        if (ptr->get_player_ptr() ==
+            inns.team_bat->players[inns.team_bat->i_captain]) {
+            name += " (c)";
+        }
+        if (ptr->get_player_ptr() ==
+            inns.team_bat->players[inns.team_bat->i_wk]) {
+            name += " (wk)";
+        }
 
         if (ptr->is_active()) {
-            output += BUFFER + ptr->get_player_ptr()->get_full_initials() +
-                      BUFFER + ptr->print_dism() + BUFFER +
-                      std::to_string(stats.runs) + BUFFER +
-                      std::to_string(stats.balls) + BUFFER +
-                      std::to_string(stats.fours) + BUFFER +
-                      std::to_string(stats.sixes) + BUFFER + srs + "\n";
+            print_spaced<std::string>(os, name, name_width);
+            print_spaced<std::string>(os, ptr->print_dism(), dism_width);
+            print_spaced<int>(os, stats.runs, 5);
+            print_spaced<int>(os, stats.balls, 5);
+            print_spaced<int>(os, stats.fours, 5);
+            print_spaced<int>(os, stats.sixes, 5);
+            print_spaced<std::string>(os, sr, 5);
+
+            os << std::endl;
         }
     }
     // Extras
-    output += "\n" + BUFFER + "Extras" + BUFFER + "(" + extras.print() + ")" +
-              BUFFER + std::to_string(extras.total());
-
-    output += DIVIDER;
+    os << Innings::DIVIDER;
+    print_spaced<std::string>(os, "Extras", name_width);
+    print_spaced<std::string>(os, "(" + inns.extras.print() + ")", dism_width);
+    print_spaced<int>(os, inns.extras.total(), 5);
+    os << Innings::DIVIDER;
 
     // Total score
-    int over_balls = last_over->get_num_legal_delivs();
-    double rr = team_score / (overs + (float)over_balls / 6.0);
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << rr;
-    std::string s = stream.str();
-    output += BUFFER + "Total" + BUFFER + BUFFER + "(" + std::to_string(overs) +
-              " Ov, RR " + s + ")" + BUFFER + BUFFER +
-              std::to_string(team_score) + DIVIDER + "\n";
+    int over_balls = inns.last_over->get_num_legal_delivs();
+    std::string rr = print_rounded(
+        inns.team_score / (inns.overs + (float)over_balls / 6.0), 2);
 
-    // List Did not bat, fall of wickets
+    print_spaced<std::string>(os, "Total", name_width);
+    print_spaced<std::string>(
+        os, "(" + std::to_string(inns.overs) + " Ov, RR " + rr + ")",
+        dism_width);
+    os << inns.team_score;
+
+    if (inns.wkts < 10) {
+        os << "/" << inns.wkts;
+        if (false) {
+            // TODO: Use declared flag
+            os << "d";
+        }
+
+        os << Innings::DIVIDER;
+
+        // Did not bat
+        os << "Did not bat: ";
+    }
+
+    os << Innings::DIVIDER;
+
+    // fall of wickets
+    os << "Fall of Wickets: ";
+
+    os << Innings::DIVIDER;
 
     // Bowlers
-    output += BUFFER + "Bowling" + BUFFER + BUFFER + "O" + BUFFER + "M" +
-              BUFFER + "R" + BUFFER + "W" + BUFFER + "Econ" + DIVIDER;
+    print_spaced<std::string>(os, "Bowling", name_width);
+    print_spaced<std::string>(os, "O", 6);
+    print_spaced<std::string>(os, "M", 5);
+    print_spaced<std::string>(os, "R", 5);
+    print_spaced<std::string>(os, "W", 5);
+    print_spaced<std::string>(os, "Econ", 5);
+    os << Innings::DIVIDER;
+
     for (int i = 0; i < 11; i++) {
         // Calculate and format economy
-        BowlerCard* ptr = bowlers[i];
+        BowlerCard* ptr = inns.bowlers[i];
         BowlStats stats = ptr->get_sim_stats();
 
         // Only print if they have bowled a ball
@@ -659,21 +700,26 @@ std::string Innings::print() {
             std::pair<int, int> overs = balls_to_ov(stats.balls);
 
             // Calculate economy
-            double econ = stats.runs / (overs.first + overs.second / 6.0);
-            std::stringstream stream;
-            stream << std::fixed << std::setprecision(2) << econ;
-            std::string econs = stream.str();
+            std::string econ =
+                print_rounded(stats.runs / (overs.first + overs.second / 6.0));
 
-            output += ptr->get_player_ptr()->get_full_initials() + BUFFER +
-                      std::to_string(overs.first) + "." +
-                      std::to_string(overs.second) + BUFFER +
-                      std::to_string(stats.maidens) + BUFFER +
-                      std::to_string(stats.runs) + BUFFER +
-                      std::to_string(stats.wickets) + BUFFER + econs + "\n";
+            print_spaced<std::string>(
+                os, ptr->get_player_ptr()->get_full_initials(), name_width);
+
+            std::string over_str = std::to_string(overs.first);
+            if (overs.second > 0)
+                over_str += "." + std::to_string(overs.second);
+
+            print_spaced<std::string>(os, over_str, 6);
+            print_spaced<int>(os, stats.maidens, 5);
+            print_spaced<int>(os, stats.runs, 5);
+            print_spaced<int>(os, stats.wickets, 5);
+            print_spaced<std::string>(os, econ, 5);
+            os << std::endl;
         }
     }
 
-    return output;
+    return os;
 }
 
 // Getters
@@ -737,7 +783,7 @@ void Match::simulate_toss() {
     }
 
     if ((double)rand() / (RAND_MAX) <
-        Model::MODEL_TOSS_ELECT(venue->pitch_factors->spin)) {
+        prediction::toss_elect(venue->pitch_factors->spin)) {
         choice = field;
     } else {
         choice = bat;
@@ -777,7 +823,7 @@ bool Match::DECIDE_FOLLOW_ON(int lead) {
         return false;
     else {
         // Use model to randomly decide whether or not to enforce the follow-on
-        double r = Model::MODEL_FOLLOW_ON(lead);
+        double r = prediction::follow_on(lead);
         return (double)rand() / (RAND_MAX) < r;
     }
 }
@@ -858,16 +904,13 @@ void Match::start(bool quiet) {
     }
 }
 
-std::string Match::print_all() {
-    std::string output;
+void Match::print_all() {
     for (int i = 0; i < 4; i++) {
         if (inns[i] != nullptr)
-            output += inns[i]->print();
+            std::cout << *inns[i] << std::endl;
     }
 
-    output += "\n" + result->print() + ".\n";
-
-    return output;
+    std::cout << result->print() << std::endl;
 }
 
 Match::~Match() {

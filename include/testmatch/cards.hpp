@@ -162,14 +162,17 @@ class PlayerCard {
 
   protected:
     Player* player;
+    int order;
+    bool activated;
 
   public:
     // Constructors
     PlayerCard(){};
-    PlayerCard(Player* c_player);
+    PlayerCard(Player* c_player, int c_order);
 
-    // Getter
+    // Getters
     Player* get_player_ptr();
+    int get_order();
 
     // Pure virtual methods
     virtual void update_score(std::string outcome) = 0;
@@ -196,7 +199,7 @@ class BatterCard : public PlayerCard {
 
   public:
     BatterCard() : PlayerCard(){};
-    BatterCard(Player* c_player);
+    BatterCard(Player* c_player, int c_order);
 
     BatStats get_sim_stats(void);
 
@@ -245,7 +248,7 @@ class BowlerCard : public PlayerCard {
 
   public:
     BowlerCard() : PlayerCard(){};
-    BowlerCard(Player* c_player);
+    BowlerCard(Player* c_player, int c_order);
 
     BowlStats get_sim_stats(void);
     void update_score(std::string outcome);
@@ -344,6 +347,8 @@ class Over {
 
 class Extras {
   private:
+    unsigned int
+        n_noballs; // Primarily for testing - the number of no balls bowled
     unsigned int byes;
     unsigned int legbyes;
     unsigned int noballs;
@@ -353,8 +358,8 @@ class Extras {
     Extras();
 
     bool update_score(std::string outcome);
-    std::string print();
-    int total();
+    std::string print() const;
+    int total() const;
 };
 
 struct FOW {

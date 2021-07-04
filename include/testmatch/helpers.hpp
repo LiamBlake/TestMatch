@@ -6,12 +6,6 @@
  * vice-versa. These are used primarily in conversions from simulation backend
  * to printed/displayed results (e.g. a scorecard or ball-by-ball description).
  *
- * Note that all the functions here are defined and implementated here (with the
- * inline keyword). This is probably bad practice, but I wanted to avoid having
- * an additional .cpp file since no class is declared here. If I need to declare
- * a class here for whatever reason, I will probably move the implementations
- * here to a .cpp, but for now, the header is all we need.
- *
  */
 
 #ifndef UTILITY_H
@@ -21,6 +15,9 @@
 
 #include <cmath>
 #include <exception>
+#include <iomanip>
+#include <iostream>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -122,6 +119,24 @@ T sample_cdf(T* values, int length, double* dist) {
     return values[i - 1];
 }
 
+template <typename S>
+S sample_pf_map(std::map<S, double> probs) {
+    // Generate random number
+    double r = ((double)rand() / (RAND_MAX));
+
+    // Iterate through CDF until the first entry > r is found
+    double sum_prob = 0;
+    S sampled_key;
+    for (auto const& [key, val] : probs) {
+        sum_prob += val;
+        sampled_key = key;
+        if (r > sum_prob)
+            break;
+    }
+
+    return sampled_key;
+};
+
 // Converts ball count to overs and balls
 inline std::pair<int, int> balls_to_ov(unsigned int balls) {
     std::pair<int, int> output((int)balls / 6, balls % 6);
@@ -207,5 +222,37 @@ inline double boxcox(double x, double lambda) {
         return (pow(x, lambda) - 1) / lambda;
     }
 }
+
+template <typename T>
+void print_spaced(std::ostream& os, T t, const int& width) {
+    os << std::left << std::setw(width) << std::setfill(' ') << t;
+    // return os;
+}
+
+std::string print_rounded(double value, int precision = 2);
+
+/**
+ * @brief Normalise a map of probabilities
+ *
+ * @tparam T
+ * @tparam S
+ * @param map
+ * @param ref_key
+ */
+template <typename S, typename T>
+void normalise_to_ref(std::map<S, T>& map, S ref_key) {
+    T ref_val = map[ref_key];
+    for (auto const& [key, val] : map) {
+        if (key != ref_key)
+            map[key] = val / (1 - ref_val);
+    }
+};
+
+template <typename S, typename T>
+void multiply(std::map<S, T>& map, T mult) {
+    for (auto const& [key, val] : map) {
+        map[key] = mult * val;
+    }
+};
 
 #endif // UTILITY_H

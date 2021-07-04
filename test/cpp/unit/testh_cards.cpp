@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(testclass_dismissal) {
 
 BOOST_AUTO_TEST_CASE(testclass_battercard) {
     // Test object
-    BatterCard bc(&tp_bat);
+    BatterCard bc(&tp_bat, 0);
 
     // Ensure correct initialisation
     BOOST_TEST(bc.print_card() == "M Labuschagne not out 0 (0b 0x4 0x6) SR: -");
@@ -98,25 +98,24 @@ BOOST_AUTO_TEST_CASE(testclass_battercard) {
     bc.dismiss(bowled, &tp_bowl);
     BOOST_TEST(bc.print_card() ==
                "M Labuschagne b Boult 32 (18b 3x4 2x6) SR: 177.78");
-
 }
 
 BOOST_AUTO_TEST_CASE(testclass_bowlercard) {
     // Test object
-    BowlerCard bc(&tp_bowl);
+    BowlerCard bc(&tp_bowl, 0);
 
     // Check initialisation
-    BOOST_TEST(bc.print_card() == "TA Boult 0.0-0-0-0");
+    BOOST_TEST(bc.print_card() == "TA Boult 0-0-0-0");
 
     // Use array of pairs to test outcomes
     std::pair<std::string, std::string> outcomes[21] = {
         {"0", "TA Boult 0.1-0-0-0"},    {"0", "TA Boult 0.2-0-0-0"},
         {"0", "TA Boult 0.3-0-0-0"},    {"0", "TA Boult 0.4-0-0-0"},
-        {"0", "TA Boult 0.5-0-0-0"},    {"0", "TA Boult 1.0-1-0-0"},
+        {"0", "TA Boult 0.5-0-0-0"},    {"0", "TA Boult 1-1-0-0"},
         {"1", "TA Boult 1.1-1-1-0"},    {"2", "TA Boult 1.2-1-3-0"},
         {"3", "TA Boult 1.3-1-6-0"},    {"4", "TA Boult 1.4-1-10-0"},
-        {"5", "TA Boult 1.5-1-15-0"},   {"6", "TA Boult 2.0-1-21-0"},
-        {"1nb", "TA Boult 2.0-1-22-0"}, {"5nb", "TA Boult 2.0-1-27-0"},
+        {"5", "TA Boult 1.5-1-15-0"},   {"6", "TA Boult 2-1-21-0"},
+        {"1nb", "TA Boult 2-1-22-0"},   {"5nb", "TA Boult 2-1-27-0"},
         {"1b", "TA Boult 2.1-1-27-0"},  {"4b", "TA Boult 2.2-1-27-0"},
         {"1lb", "TA Boult 2.3-1-27-0"}, {"4lb", "TA Boult 2.4-1-27-0"},
         {"1wd", "TA Boult 2.4-1-28-0"}, {"5wd", "TA Boult 2.4-1-33-0"},
@@ -126,6 +125,11 @@ BOOST_AUTO_TEST_CASE(testclass_bowlercard) {
         bc.update_score(outcomes[i].first);
         BOOST_TEST(bc.print_card() == outcomes[i].second);
     }
+
+    // Stress test
+    for (int i = 0; i < 600; i++)
+        bc.update_score("0");
+    BOOST_TEST(bc.print_card() == "TA Boult 102.5-100-33-1");
 }
 
 BOOST_AUTO_TEST_CASE(testclass_over) {
