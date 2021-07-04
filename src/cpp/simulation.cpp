@@ -284,11 +284,6 @@ Innings::Innings(Team* c_team_bat, Team* c_team_bowl, int c_lead,
     bowl1 = bowlers[team_bowl->i_bowl1];
     bowl2 = bowlers[team_bowl->i_bowl2];
 
-    // This ain't a good implementation - get your functions sorted man
-    temp_outcomes = new std::string[Model::NUM_DELIV_OUTCOMES];
-    for (int i = 0; i < Model::NUM_DELIV_OUTCOMES; i++)
-        temp_outcomes[i] = Model::DELIV_OUTCOMES.at(i);
-
     // Set-up the first over
     first_over = last_over = new Over(1);
 
@@ -307,13 +302,11 @@ void Innings::simulate_delivery() {
     // Pass game information to delivery model
 
     // Get outcome probabilities
-    double* probs =
-        Model::MODEL_DELIVERY(striker->get_sim_stats(), bowl1->get_sim_stats());
+    std::map<std::string, double> probs = prediction::delivery(
+        striker->get_sim_stats(), bowl1->get_sim_stats(), {});
 
     // Simulate
-    std::string outcome = sample_cdf<std::string>(
-        temp_outcomes, Model::NUM_DELIV_OUTCOMES, probs);
-    delete[] probs;
+    std::string outcome = sample_pf_map<std::string>(probs);
 
     std::pair<int, std::string> t_output;
 
@@ -345,8 +338,9 @@ void Innings::simulate_delivery() {
         legal_delivs++;
 
         // Randomly choose the type of dismissal
-        DismType dism =
-            Model::MODEL_WICKET_TYPE(bowl1->get_player_ptr()->get_bowl_type());
+        std::map<DismType, double> dism_pf =
+            prediction::wkt_type(bowl1->get_player_ptr()->get_bowl_type());
+        DismType dism = sample_pf_map<DismType>(dism_pf);
 
         // Pick a fielder
         Player* fielder =
@@ -788,7 +782,7 @@ void Match::simulate_toss() {
     }
 
     if ((double)rand() / (RAND_MAX) <
-        Model::MODEL_TOSS_ELECT(venue->pitch_factors->spin)) {
+        prediction::toss_elect(venue->pitch_factors->spin)) {
         choice = field;
     } else {
         choice = bat;
@@ -828,7 +822,7 @@ bool Match::DECIDE_FOLLOW_ON(int lead) {
         return false;
     else {
         // Use model to randomly decide whether or not to enforce the follow-on
-        double r = Model::MODEL_FOLLOW_ON(lead);
+        double r = prediction::follow_on(lead);
         return (double)rand() / (RAND_MAX) < r;
     }
 }

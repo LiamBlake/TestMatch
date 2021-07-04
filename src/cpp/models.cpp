@@ -12,10 +12,6 @@ namespace prediction {
 // Constants used internally within the prediction namespace
 // TODO: Find a better way of avoiding hardcoding these within the prediction
 // functions. Perhaps enums? This approach feels clunky.
-// All possible wicket-related outcomes
-static const int N_OUTCOMES_WKT = 2;
-static const std::string OUTCOMES_WKT[2] = {"no", "W"};
-
 // All possible types of extras
 static const int N_EXTRAS = 5;
 static const std::string EXTRAS[5] = {"legal", "b", "lb", "nb", "wd"};
@@ -39,7 +35,8 @@ static const std::string OUTCOMES_WIDE[5] = {"1wd", "2wd", "3wd", "4wd", "5wd"};
 
 // All possible outcomes on a legal delivery where no wicket falls
 static const int N_OUTCOMES_LEGAL = 7;
-static const std::string OUTCOMES_WIDE[7] = {"0", "1", "2", "3", "4", "5", "6"};
+static const std::string OUTCOMES_LEGAL[7] = {"0", "1", "2", "3",
+                                              "4", "5", "6"};
 
 static const int N_DISM_MODES = 6;
 static const DismType DISM_MODES[6] = {bowled, caught,  c_and_b,
@@ -57,13 +54,13 @@ static const DismType DISM_MODES[6] = {bowled, caught,  c_and_b,
  * This model, along with the entire pitch condition set-up, will probably
  * be eventually improved.
  **/
-double MODEL_TOSS_ELECT(double spin_factor) {
+double toss_elect(double spin_factor) {
     // Exponential model
     double a = 0.05;
     return a * exp(log(0.9 / a) * spin_factor);
 }
 
-double prob_wkt(BatStats bat, BowlStats bowl, MatchStats match) {
+double wkt(BatStats bat, BowlStats bowl, MatchStats match) {
     double bat_sr = bat.career_strike_rate;
     double bat_avg = bat.career_bat_avg;
     if (bat_sr == 0)
@@ -73,6 +70,29 @@ double prob_wkt(BatStats bat, BowlStats bowl, MatchStats match) {
 
     return 0.5 * (bat_sr / (100 * bat_avg) + 1 / bowl.strike_rate);
 }
+
+std::map<std::string, double> extras(BatStats bat, BowlStats bowl,
+                                     MatchStats match) {
+    Arm bowl_arm = bowl.bowl_arm;
+    BowlType bowl_type = bowl.bowl_type;
+}
+
+std::map<std::string, double> bat_runs(BatStats bat, BowlStats bowl,
+                                       MatchStats match) {
+    double bat_sr = bat.career_strike_rate;
+}
+
+std::map<std::string, double> byes_runs(BatStats bat, BowlStats bowl,
+                                        MatchStats match) {}
+
+std::map<std::string, double> legbyes_runs(BatStats bat, BowlStats bowl,
+                                           MatchStats match) {}
+
+std::map<std::string, double> wides_runs(BatStats bat, BowlStats bowl,
+                                         MatchStats match) {}
+
+std::map<std::string, double> noballs_runs(BatStats bat, BowlStats bowl,
+                                           MatchStats match) {}
 
 /**
  * @brief
@@ -103,7 +123,7 @@ double MODEL_DECLARATION(int lead, int match_balls, bool is_wkt, int innings) {
  *  p = \frac{1}{1 + \exp{-1101.903 + 1058.466 \times\text{t_lead}}}.
  * \f]
  */
-double MODEL_FOLLOW_ON(int lead) {
+double follow_on(int lead) {
     // Logistic regression, fitted in R
 
     // Preprocessing of lead value
@@ -114,102 +134,55 @@ double MODEL_FOLLOW_ON(int lead) {
     return 1 / (1 + exp(logit));
 }
 
-// Generates probability distribution for each possible outcome
-double* MODEL_DELIVERY(BatStats bat, BowlStats bowl) {
-    double* output = new double[NUM_DELIV_OUTCOMES];
-
-    // PLACEHOLDER - data proportions, hard-coded model
-    if (is_slow_bowler(bowl.bowl_type)) {
-        output[0] = 0;
-        output[1] = 0.700414129;
-        output[2] = 0.878619915;
-        output[3] = 0.879463788;
-        output[4] = 0.881999123;
-        output[5] = 0.884047465;
-        output[6] = 0.884303973;
-        output[7] = 0.919880445;
-        output[8] = 0.920519855;
-        output[9] = 0.921326553;
-        output[10] = 0.92133027;
-        output[11] = 0.921341423;
-        output[12] = 0.92863144;
-        output[13] = 0.928873077;
-        output[14] = 0.929029212;
-        output[15] = 0.976230307;
-        output[16] = 0.977791656;
-        output[17] = 0.978115079;
-        output[18] = 0.978234039;
-        output[19] = 0.978241474;
-        output[20] = 0.978267496;
-    } else {
-        output[0] = 0;
-        output[1] = 0.72505691;
-        output[2] = 0.844465522;
-        output[3] = 0.845466186;
-        output[4] = 0.851517595;
-        output[5] = 0.859254956;
-        output[6] = 0.862496443;
-        output[7] = 0.899248316;
-        output[8] = 0.899452243;
-        output[9] = 0.900194442;
-        output[10] = 0.900244238;
-        output[11] = 0.900298776;
-        output[12] = 0.910843688;
-        output[13] = 0.910879256;
-        output[14] = 0.910912454;
-        output[15] = 0.978537892;
-        output[16] = 0.979818363;
-        output[17] = 0.98124585;
-        output[18] = 0.981426065;
-        output[19] = 0.981497202;
-        output[20] = 0.981855259;
-    }
-
-    // Wicket probability
-    double wkt_value = 1 - prob_wkt(bat, bowl, {});
-    output[21] = wkt_value;
-
-    // Rescale fixed probabilities
-    for (int i = 0; i < NUM_DELIV_OUTCOMES - 1; i++) {
-        output[i] = output[i] * wkt_value;
-    }
-
-    return output;
+void merge_cond_prob(std::map<std::string, double>& probs_map,
+                     std::map<std::string, double> cond_map, double prob) {
+    multiply<std::string, double>(cond_map, prob);
+    probs_map.merge(cond_map);
 }
 
-DismType MODEL_WICKET_TYPE(BowlType bowltype) {
-    // This desperately needs cleaning up
+// Generates probability distribution for each possible outcome
+std::map<std::string, double> delivery(BatStats bat, BowlStats bowl,
+                                       MatchStats match) {
+    std::map<std::string, double> probs;
 
-    DismType* DISM_MODES = new DismType[NUM_DISM_MODES];
-    double* DISM_MODE_DIST = new double[NUM_DISM_MODES];
+    // Wicket probability
+    probs["W"] = wkt(bat, bowl, match);
 
-    double DISM_MODE_SPINNER[6] = {0, 0.157, 0.692, 0.7274, 0.9286, 0.9613};
+    // Probabilities of extras
+    std::map<std::string, double> probs_extras = extras(bat, bowl, match);
+
+    // Each outcome
+    merge_cond_prob(probs, bat_runs(bat, bowl, match), probs_extras["legal"]);
+    merge_cond_prob(probs, byes_runs(bat, bowl, match), probs_extras["b"]);
+    merge_cond_prob(probs, legbyes_runs(bat, bowl, match), probs_extras["lb"]);
+    merge_cond_prob(probs, noballs_runs(bat, bowl, match), probs_extras["nb"]);
+    merge_cond_prob(probs, wides_runs(bat, bowl, match), probs_extras["wd"]);
+
+    // Scale each probability w.r.t wicket probability
+    normalise_to_ref<std::string, double>(probs, "W");
+    return probs;
+}
+
+std::map<DismType, double> wkt_type(BowlType bowltype) {
     double DISM_MODE_SEAMER[6] = {0, 0.175, 0.815, 0.8291, 0.9731, 1};
 
-    bool is_spinner = is_slow_bowler(bowltype);
-
-    // Check if "f" is in bowl_type - indicates whether stumpings are possible
-    for (int i = 0; i < NUM_DISM_MODES; i++) {
-        DISM_MODES[i] = DISM_MODES_STATIC[i];
-        if (is_spinner) {
-            // Spinner model
-            // double DISM_MODE_DIST [8] = {0.157, 0.534, 0.0359, 0.201, 0.0326,
-            // 0.0387};
-            DISM_MODE_DIST[i] = DISM_MODE_SPINNER[i];
-        } else {
-            // Seamer model
-            // double DISM_MODE_DIST [8] = {0.175, 0.640, 0.0141, 0.144, 0.0242,
-            // 0};
-            DISM_MODE_DIST[i] = DISM_MODE_SEAMER[i];
-        }
+    std::map<DismType, double> probs;
+    if (is_slow_bowler(bowltype)) {
+        probs[bowled] = 0.157;
+        probs[caught] = 0.535;
+        probs[c_and_b] = 0.0354;
+        probs[lbw] = 0.2012;
+        probs[run_out] = 0.0327;
+        probs[stumped] = 0.0387;
+    } else {
+        probs[bowled] = 0.1755;
+        probs[caught] = 0.64;
+        probs[c_and_b] = 0.0141;
+        probs[lbw] = 0.144;
+        probs[run_out] = 0.0269;
+        probs[stumped] = 0;
     }
 
-    // Sample from distribution
-    DismType dism_mode =
-        sample_cdf<DismType>(DISM_MODES, NUM_DISM_MODES, DISM_MODE_DIST);
-
-    delete[] DISM_MODE_DIST;
-    delete[] DISM_MODES;
-    return dism_mode;
+    return probs;
 }
 } // namespace prediction

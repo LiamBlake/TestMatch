@@ -79,10 +79,10 @@ BOOST_AUTO_TEST_CASE(testfeature_followon) {
 
     // Ensure fit matches that expected by R
     double eps = 0.0001;
-    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(200) - 0.1386838) < eps);
-    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(250) - 0.3812311) < eps);
-    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(350) - 0.7442012) < eps);
-    BOOST_TEST(abs(Model::MODEL_FOLLOW_ON(500) - 0.9046413) < eps);
+    BOOST_TEST(abs(prediction::follow_on(200) - 0.1386838) < eps);
+    BOOST_TEST(abs(prediction::follow_on(250) - 0.3812311) < eps);
+    BOOST_TEST(abs(prediction::follow_on(350) - 0.7442012) < eps);
+    BOOST_TEST(abs(prediction::follow_on(500) - 0.9046413) < eps);
 }
 
 BOOST_FIXTURE_TEST_CASE(testclass_simulation, F_Pregame) {

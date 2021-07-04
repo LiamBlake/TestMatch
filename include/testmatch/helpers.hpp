@@ -17,6 +17,7 @@
 #include <exception>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -118,6 +119,20 @@ T sample_cdf(T* values, int length, double* dist) {
     return values[i - 1];
 }
 
+template <typename S>
+S sample_pf_map(std::map<S, double> probs) {
+    // Generate random number
+    double r = ((double)rand() / (RAND_MAX));
+
+    // Iterate through CDF until the first entry > r is found
+    double sum_prob = 0;
+    for (auto const& [key, val] : probs) {
+        if (r > sum_prob)
+            return key;
+        sum_prob += val;
+    }
+};
+
 // Converts ball count to overs and balls
 inline std::pair<int, int> balls_to_ov(unsigned int balls) {
     std::pair<int, int> output((int)balls / 6, balls % 6);
@@ -211,5 +226,29 @@ void print_spaced(std::ostream& os, T t, const int& width) {
 }
 
 std::string print_rounded(double value, int precision = 2);
+
+/**
+ * @brief Normalise a map of probabilities
+ *
+ * @tparam T
+ * @tparam S
+ * @param map
+ * @param ref_key
+ */
+template <typename S, typename T>
+void normalise_to_ref(std::map<S, T>& map, S ref_key) {
+    T ref_val = map[ref_key];
+    for (auto const& [key, val] : map) {
+        if (key != ref_key)
+            map[key] = val / (1 - ref_val);
+    }
+};
+
+template <typename S, typename T>
+void multiply(std::map<S, T>& map, T mult) {
+    for (auto const& [key, val] : map) {
+        map[key] = mult * val;
+    }
+};
 
 #endif // UTILITY_H

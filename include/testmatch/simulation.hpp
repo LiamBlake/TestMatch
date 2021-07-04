@@ -118,9 +118,9 @@ class BowlingManager {
             // Only consider if pace bowler and full-time
             if (predicate(curr)) {
                 // Calculate objective function
-                new_obj = Model::OBJ_AVG_FATIG(curr_ply->get_bowl_avg(),
-                                               curr_ply->get_bowl_sr(),
-                                               curr->get_tiredness());
+                new_obj = prediction::OBJ_AVG_FATIG(curr_ply->get_bowl_avg(),
+                                                    curr_ply->get_bowl_sr(),
+                                                    curr->get_tiredness());
 
                 // Compare to current best
                 if (new_obj < min_obj) {
@@ -380,8 +380,8 @@ class Match {
     void start(bool quiet = true);
 
     /**
-     * @brief 
-     * 
+     * @brief
+     *
      */
     void print_all();
 
