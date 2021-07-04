@@ -1,5 +1,4 @@
-# Runs all required checks of any code being committed to the main branch
-name: code checks
+name: Build & test
 
 on:
   pull_request:
@@ -9,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  cpp:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -17,8 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
 
       - name: Install Boost (Linux)
         if: runner.os == 'Linux'
@@ -45,6 +42,15 @@ jobs:
       - name: Run unit tests
         run: cd build && ctest --verbose
 
+  python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -58,32 +64,3 @@ jobs:
 
       - name: Run Python tests
         run: pytest
-
-  linter:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: DoozyX/clang-format-lint-action@v0.12
-        with:
-          source: "src include"
-          extensions: "h,cpp"
-          clangFormatVersion: 11
-          exclude: test/* extern/*
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-
-      - name: Install package and dependencies
-        run: python -m pip install -e .[dev]
-
-      - name: Lint with flake8
-        run: flake8 src/testmatch
-
-      - name: Lint with black
-        run: black --check src/testmatch
-
-      - name: Type checking with mypy
-        run: mypy src/testmatch
