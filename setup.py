@@ -15,7 +15,7 @@ setup(
             "flake8==3.9.2",
             "pytest==6.2.4",
             "pytest-cov==2.12.1",
-            "isort==5.9.1",
+            "isort==5.9.2",
             "mypy==0.910",
         ]
     },
