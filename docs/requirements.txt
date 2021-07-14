@@ -1,2 +1,2 @@
 breathe==4.11.1
-Sphinx==1.8.1
+Sphinx==4.1.1
