@@ -9,20 +9,11 @@
 #include <string>
 #include <utility>
 
-TimeOfDay::TimeOfDay() : _sec(0), _min(0), _hrs(0) {}
+typedef unsigned int uint;
 
-TimeOfDay::TimeOfDay(uint sec, uint min, uint hrs)
-    : _sec(sec), _min(min), _hrs(hrs) {
-    // Round appropriately
-}
-
-TimeOfDay::TimeOfDay(double dr) : _sec(0), _hrs((uint)dr) {
-    if (dr < 0) {
-        // Raise exception
-    }
-
-    _min = dr - _hrs;
-}
+/*
+    Time implementations
+*/
 
 std::string TimeOfDay::two_digits(int val) {
     std::string output;
@@ -33,46 +24,113 @@ std::string TimeOfDay::two_digits(int val) {
     return output;
 }
 
-// Explicit casts
-TimeOfDay::operator std::string() {
-    return two_digits(_hrs) + ":" + two_digits(_min) + ":" + two_digits(_sec);
+TimeOfDay::TimeOfDay(uint c_hour, uint c_min, u_int c_sec)
+    : hour(c_hour), min(c_min), sec(c_sec) {}
+
+TimeOfDay::TimeOfDay(float val) { set(val); }
+
+void TimeOfDay::set(uint n_hour, uint n_min, u_int n_sec) {
+    hour = n_hour;
+    min = n_min;
+    sec = n_sec;
 }
 
-TimeOfDay::operator int() { return _hrs * 3600 + _min * 60 + _sec; }
+void TimeOfDay::set(float val) {
+    sec = 0;
+    hour = val;
+    min = std::round(val * 100) - int(val) * 100;
 
-// Getters
-uint TimeOfDay::sec() { return _sec; }
-uint TimeOfDay::min() { return _min; }
-uint TimeOfDay::hrs() { return _hrs; }
+    // TODO: Check for invalid values
+}
 
-void TimeOfDay::set(double dr) {}
+uint TimeOfDay::get_hour() { return hour; }
+uint TimeOfDay::get_min() { return min; }
+uint TimeOfDay::get_sec() { return sec; }
 
-// Overloaded operators
-TimeOfDay& TimeOfDay::operator++() {
-    *this += 1;
+TimeOfDay& TimeOfDay::operator+=(const int& rhs) {
+    sec += rhs;
+
+    if (sec > 60) {
+        min += sec / 60;
+        sec = sec % 60;
+
+        if (min > 60) {
+            hour = (hour + min / 60) % 24;
+            min = min % 60;
+        }
+    }
+
     return *this;
 }
 
-TimeOfDay TimeOfDay::operator++(int) {
-    TimeOfDay old = *this;
-    (*this)++;
-    return old;
+TimeOfDay::operator std::string() {
+    std::string am_pm_str;
+    if (hour < 12) {
+        am_pm_str = "am";
+    } else {
+        am_pm_str = "pm";
+    }
+
+    uint hour_12;
+    if (hour == 0 || hour == 12) {
+        hour_12 = 12;
+    } else {
+        hour_12 = hour % 12;
+    }
+
+    return (std::to_string(hour_12) + ":" + two_digits(min) + " " + am_pm_str);
 }
 
-TimeOfDay& TimeOfDay::operator+=(const TimeOfDay& rhs) { return *this; }
-
-TimeOfDay& TimeOfDay::operator+=(const int& rhs) {
-    return *this += TimeOfDay(rhs);
+bool operator==(const TimeOfDay lhs, const TimeOfDay& rhs) {
+    return (lhs.hour == rhs.hour) && (lhs.min == rhs.min) &&
+           (lhs.sec == rhs.sec);
 }
 
-bool operator==(const TimeOfDay& lhs, const TimeOfDay& rhs) {
-    return ((lhs._hrs == rhs._hrs) && (lhs._min == rhs._min) &&
-            (lhs._sec == rhs._sec));
+bool operator==(const TimeOfDay lhs, const float& rhs) {
+    TimeOfDay tod_rhs(rhs);
+    return lhs == tod_rhs;
 }
-bool operator==(const TimeOfDay& lhs, const TimeOfDay& rhs);
 
-TimeOfDay operator+(TimeOfDay lhs, const TimeOfDay& rhs);
-TimeOfDay operator+(TimeOfDay lhs, const int& rhs);
+int operator-(const TimeOfDay lhs, const TimeOfDay& rhs) {
+    return 3600 * (lhs.hour - rhs.hour) + 60 * (lhs.min - rhs.min) +
+           (lhs.sec - rhs.sec);
+}
+
+int operator-(const TimeOfDay lhs, const float& rhs) {
+    TimeOfDay tod_rhs(rhs);
+    return lhs - tod_rhs;
+}
+
+int operator-(const float lhs, const TimeOfDay& rhs) { return -(rhs - lhs); }
+
+bool operator>(const TimeOfDay lhs, const TimeOfDay& rhs) {
+    if (lhs.hour > rhs.hour) {
+        return true;
+    } else if (lhs.hour < rhs.hour) {
+        return false;
+    }
+
+    if (lhs.min > rhs.min) {
+        return true;
+    } else if (lhs.min < rhs.min) {
+        return false;
+    }
+
+    return lhs.sec > rhs.sec;
+}
+
+bool operator>(const TimeOfDay lhs, const float& rhs) {
+    TimeOfDay tod_rhs(rhs);
+    return lhs > tod_rhs;
+}
+
+bool operator>=(const TimeOfDay lhs, const TimeOfDay& rhs) {
+    return (lhs > rhs) || (lhs == rhs);
+}
+
+bool operator>=(const TimeOfDay lhs, const float& rhs) {
+    return (lhs > rhs) || (lhs == rhs);
+}
 
 /*
     MatchTime implementations

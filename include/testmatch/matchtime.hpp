@@ -14,44 +14,60 @@
 // For brevity of code
 typedef unsigned int uint;
 
+/**
+ * @brief
+ *
+ */
 class TimeOfDay {
-  private:
-    uint _sec;
-    uint _min;
-    uint _hrs;
+    uint hour;
+    uint min;
+    uint sec;
 
     static std::string two_digits(int val);
-    void rounder();
 
   public:
-    TimeOfDay();
-    TimeOfDay(uint hrs, uint min, uint sec);
-    TimeOfDay(double dr);
+    TimeOfDay(uint c_hour, uint c_min, u_int c_sec);
+    TimeOfDay(float val);
 
-    // Explicit casts
-    operator std::string();
-    operator int();
+    void set(uint n_hour, uint n_min, u_int n_sec);
+    void set(float val);
 
-    // Getters
-    uint sec();
-    uint min();
-    uint hrs();
+    /** @defgroup timeofday_getters Getters for hours, minutes and seconds.
+     * @{
+     */
+    uint get_hour();
+    uint get_min();
+    uint get_sec();
 
-    // Explicit setter
-    void set(double dr);
+    /** @} // end of timeofday_getters */
 
-    // Overloaded operators
-    TimeOfDay& operator++();
-    TimeOfDay operator++(int);
-
-    TimeOfDay& operator+=(const TimeOfDay& rhs);
+    /**
+     * @brief Add seconds to a TimeOfDay object, in place.
+     *
+     * @param rhs number of seconds to add to the time.
+     * @return TimeOfDay& The original Time object, incremented by the number of
+     * seconds.
+     */
     TimeOfDay& operator+=(const int& rhs);
 
-    friend bool operator==(const TimeOfDay& lhs, const TimeOfDay& rhs);
-    friend bool operator==(const TimeOfDay& lhs, const TimeOfDay& rhs);
+    /**
+     * @brief Convert to a string giving the time in 12-hour format.
+     *
+     * @return std::string The time in 12-hour format.
+     */
+    operator std::string();
 
-    friend TimeOfDay operator+(TimeOfDay lhs, const TimeOfDay& rhs);
-    friend TimeOfDay operator+(TimeOfDay lhs, const int& rhs);
+    friend bool operator==(const TimeOfDay lhs, const TimeOfDay& rhs);
+    friend bool operator==(const TimeOfDay lhs, const float& rhs);
+
+    friend int operator-(const TimeOfDay lhs, const TimeOfDay& rhs);
+    friend int operator-(const TimeOfDay lhs, const float& rhs);
+
+    friend bool operator>(const TimeOfDay lhs, const TimeOfDay& rhs);
+    friend bool operator>(const TimeOfDay lhs, const float& rhs);
+
+    friend bool operator>=(const TimeOfDay lhs, const TimeOfDay& rhs);
+    friend bool operator>=(const TimeOfDay lhs, const float& rhs);
 };
 
 class MatchTime {
