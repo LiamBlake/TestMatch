@@ -15,10 +15,10 @@
 #include "team.hpp"
 
 #include <functional>
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-//#include "MatchTime.h"
 
 // Forward declaration allows for referencing Innings object in managers
 class Innings;
@@ -118,9 +118,9 @@ class BowlingManager {
             // Only consider if pace bowler and full-time
             if (predicate(curr)) {
                 // Calculate objective function
-                new_obj = Model::OBJ_AVG_FATIG(curr_ply->get_bowl_avg(),
-                                               curr_ply->get_bowl_sr(),
-                                               curr->get_tiredness());
+                new_obj = prediction::OBJ_AVG_FATIG(curr_ply->get_bowl_avg(),
+                                                    curr_ply->get_bowl_sr(),
+                                                    curr->get_tiredness());
 
                 // Compare to current best
                 if (new_obj < min_obj) {
@@ -287,7 +287,7 @@ class Innings {
     // Returns state string explainining why innings has ended
     std::string simulate(bool quiet = true);
 
-    std::string print(void);
+    friend std::ostream& operator<<(std::ostream& os, const Innings& inns);
 
     // Getters
     BatterCard** get_batters();
@@ -381,9 +381,9 @@ class Match {
 
     /**
      * @brief
-     * @return
+     *
      */
-    std::string print_all();
+    void print_all();
 
     ~Match();
 };

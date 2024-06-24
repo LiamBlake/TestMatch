@@ -80,7 +80,7 @@ PYBIND11_MODULE(_testmatch, m) {
         .def("__str__", &Dismissal::print_dism);
 
     class_<BatterCard>(m, "_BatterCard")
-        .def(init<Player*>())
+        .def(init<Player*, int>())
         .def_property_readonly("_stats", &BatterCard::get_sim_stats)
         .def_property_readonly("active", &BatterCard::is_active)
         .def_property_readonly("out", &BatterCard::is_out)

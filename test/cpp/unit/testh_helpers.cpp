@@ -9,6 +9,7 @@
 
 #include <exception>
 #include <iostream>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -86,6 +87,29 @@ BOOST_AUTO_TEST_CASE(testfunc_is_slow_bowler) {
     for (int i = 0; i < 6; i++) {
         BOOST_TEST(is_slow_bowler(types[i]) == expected[i]);
     }
+}
+
+// Fixtures for map methods
+struct F {
+    F() { prob_map = {{"a", 0.1}, {"b", 0.5}, {"c", 0.4}, {"d", 0.2}}; };
+
+    std::map<std::string, double> prob_map;
+};
+
+BOOST_FIXTURE_TEST_CASE(testfunc_multiply, F) {
+    multiply<std::string, double>(prob_map, 2);
+    BOOST_TEST(prob_map["a"] == 0.2);
+    BOOST_TEST(prob_map["b"] == 1);
+    BOOST_TEST(prob_map["c"] == 0.8);
+    BOOST_TEST(prob_map["d"] == 0.4);
+}
+
+BOOST_FIXTURE_TEST_CASE(testfunc_normalise_to_ref, F) {
+    normalise_to_ref<std::string, double>(prob_map, "d");
+    BOOST_TEST(prob_map["a"] == 0.125);
+    BOOST_TEST(prob_map["b"] == 0.625);
+    BOOST_TEST(prob_map["c"] == 0.5);
+    BOOST_TEST(prob_map["d"] == 0.2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
