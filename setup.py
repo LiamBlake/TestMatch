@@ -12,7 +12,7 @@ setup(
     extras_require={
         "dev": [
             "black==21.9b0",
-            "flake8==3.9.2",
+            "flake8==4.0.1",
             "pytest==6.2.5",
             "pytest-cov==2.12.1",
             "isort==5.9.3",
