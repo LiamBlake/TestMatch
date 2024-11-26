@@ -14,7 +14,7 @@ setup(
             "black==21.9b0",
             "flake8==3.9.2",
             "pytest==6.2.5",
-            "pytest-cov==2.12.1",
+            "pytest-cov==3.0.0",
             "isort==5.9.3",
             "mypy==0.910",
         ]
