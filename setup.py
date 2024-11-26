@@ -11,7 +11,7 @@ setup(
     install_requires=["dataclasses-json==0.5.6"],
     extras_require={
         "dev": [
-            "black==21.9b0",
+            "black==21.12b0",
             "flake8==3.9.2",
             "pytest==6.2.5",
             "pytest-cov==2.12.1",
